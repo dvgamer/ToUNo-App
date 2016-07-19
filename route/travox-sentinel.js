@@ -5,11 +5,19 @@ const router  	= express.Router();
 const moment  	= require('moment');
 const assert  	= require('assert');
 const request 	= require('request');
-const   		= require('./mongo/OAuth2');
+const mongo  		= require('./mongo/schema');
+const uri = {
+	access_token: 'https://github.com/login/oauth/access_token',
+	access_redirect: 'https://oauth.touno-k.com/travox/access_token'
+}
+
+const auth = {
+	client_id: 'bcd775879aa7da09520c',
+	client_secret: '060f960e69a83afe64a4774868b549d0b95ec745'
+}
 // const config  = require('$custom/config');
 // const control = require("$custom/touno-git").control;
 // const db      = require("$custom/mysql").connect();
-
 router.get('/', function(req, res){
 	let query = req.query;
 
@@ -21,17 +29,19 @@ router.get('/', function(req, res){
 	// redirect_uri		string	The URL in your application where users will be sent after authorization. See details below about redirect urls.
 	// state					string	The unguessable random string you optionally provided in Step 1.
 
-	request.post('https://github.com/login/oauth/access_token', {
+	request.post(uri.access_token, {
 	  form: {
-	    client_id: '...',
-	    client_secret: 'refresh_token',
-	    code: '...',
-	    redirect_uri: '...',
-	    state: '...'
+	    client_id: auth.client_id,
+	    client_secret: auth.client_secret,
+	    code: query.code,
+	    redirect_uri: auth.access_redirect,
+	    state: query.state
 	  },
 	  json: true
 	}, function (err, res, body) {
-	  // assert.equal(typeof body, 'object')
+	  console.log(body);
+	  console.log();
+	  console.log(assert.equal(typeof body, 'object'));
 	})
 
 
@@ -39,6 +49,10 @@ router.get('/', function(req, res){
 	//https://github.com/login/oauth/access_token
 	// console.log(query.code, query.state);
   res.end();
+});
+
+router.get('/access_token', function(req, res){
+	res.end();
 });
 
 module.exports = router;

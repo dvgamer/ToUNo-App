@@ -4,13 +4,8 @@ mongoose.connect('mongodb://touno-k.com:27017/sessions');
 
 const Schema = {
 	OAuth: mongoose.Schema({
-	  repository_id: Number,
-	  author: String,
-	  email: String,
-		subject: String,
-		comment: String,
-		logs: Boolean,
-	  since: Date
+	  code: String,
+	  author: String
 	})
 }
 
