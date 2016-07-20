@@ -16,9 +16,8 @@ const auth = {
 	client_secret: '060f960e69a83afe64a4774868b549d0b95ec745'
 }
 
-
-let commited = new mongo.OAuth({ state: 'AUTH' });
-commited.save(function (err, result) { console.log(err, result);	}); 
+// let commited = new mongo.OAuth({ state: 'AUTH' });
+// commited.save(function (err, result) { console.log(err, result);	}); 
 
 router.get('/', function(req, res){
 	let query = req.query;
