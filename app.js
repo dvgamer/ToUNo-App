@@ -10,11 +10,16 @@ const port		= 8450;
 
 express.use('/travox', [], require("./route/travox-sentinel"));
 
-http.listen(port, ()=>{
+express.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(JSON.stringify({ server: 'online' }));
+});
+
+http.listen(port, () => {
   console.log(`Server OAuth 2.0 [0.0.0.0:${port}] at ${moment().format("HH:mm:ss")} Started`);
 });
 
-process.on('exit', (code)=>{
+process.on('exit', (code) => {
   console.log(`Server OAuth 2.0 Shutdown (${code})...`);
   console.log(`Server OAuth 2.0 at ${moment().format("HH:mm:ss")} Restarting...`);
 });
