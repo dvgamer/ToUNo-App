@@ -19,7 +19,8 @@ http.listen(port, () => {
   console.log(`Server OAuth 2.0 [0.0.0.0:${port}] at ${moment().format("HH:mm:ss")} Started`);
 });
 
-process.on('exit', (code) => {
+// SIGINT, SIGTERM, and SIGKILL
+process.on('SIGTERM', (code) => {
   console.log(`Server OAuth 2.0 Shutdown (${code})...`);
   console.log(`Server OAuth 2.0 at ${moment().format("HH:mm:ss")} Restarting...`);
 });

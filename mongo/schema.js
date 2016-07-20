@@ -1,6 +1,6 @@
 const mongoose 	= require('mongoose');
 
-mongoose.connect('mongodb://touno-k.com:27017/sessions');
+mongoose.connect(`mongodb://${process.env.OAUTH_CONFIG?'mongodb':'touno-k.com'}:27017/sessions`);
 
 const Schema = {
 	OAuth: mongoose.Schema({
