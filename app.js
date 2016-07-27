@@ -16,11 +16,21 @@ express.get('/', (req, res) => {
 });
 
 http.listen(port, () => {
-  console.log(`Server OAuth 2.0 [0.0.0.0:${port}] at ${moment().format("HH:mm:ss")} Started`);
+  console.log(`Server OAuth 2.0 at ${moment().format("HH:mm:ss")} Started`);
 });
 
 // SIGINT, SIGTERM, and SIGKILL
-process.on('SIGTERM', (code) => {
-  console.log(`Server OAuth 2.0 Shutdown (${code})...`);
+process.on('SIGINT', () => {
+  console.log(`Server OAuth 2.0 at ${moment().format("HH:mm:ss")} Shutdown...`);
+  process.exit();
+}); 
+
+process.on('SIGTERM', () => {
   console.log(`Server OAuth 2.0 at ${moment().format("HH:mm:ss")} Restarting...`);
-});
+  process.exit();
+}); 
+
+process.on('SIGKILL', () => {
+  console.log(`Server OAuth 2.0 at ${moment().format("HH:mm:ss")} Restarting...`);
+  process.exit();
+}); 
