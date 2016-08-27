@@ -18,7 +18,7 @@ express.get('/poke-map/:id/:name/:lat/:lng', (req, res) => {
     channel: "#poke-map", 
     username: param.name, 
     icon_url: `http://dev.ns.co.th:810/static/icons/${param.id}.png`,
-    text: `At \`${param.lat}\`,\`${parseFloat(param.lng)}\``
+    text: `At \`${param.lat}\`,\`${param.lng}\``
   }
 
 	request.post({
