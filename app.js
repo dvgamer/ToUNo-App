@@ -16,7 +16,7 @@ express.get('/poke-map/:id/:name/:lat/:lng', (req, res) => {
 	let param = req.params; // { id: '1', name: 'aaa', lat: '1', lng: '1' }
 	let noti = {
     channel: "#poke-map", 
-    username: `A wild ${param.name }`, 
+    username: param.name, 
     icon_url: `http://dev.ns.co.th:810/static/icons/${param.id}.png`,
     text: `At \`${param.lat}\`,\`${parseFloat(param.lng)}\``
   }
