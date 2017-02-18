@@ -6,7 +6,6 @@ const Q  				= require('q');
 const assert  	= require('assert');
 const request 	= require('request');
 const mongo  		= require('../mongo/schema');
-const bodyParser = require('body-parser')
 
 const uri = {
 	access_token: 'https://github.com/login/oauth/access_token',
@@ -16,12 +15,6 @@ const auth = {
 	client_id: 'bcd775879aa7da09520c',
 	client_secret: '060f960e69a83afe64a4774868b549d0b95ec745'
 }
-
-// let commited = new mongo.OAuth({ state: 'AUTH' });
-// commited.save(function (err, result) { console.log(err, result);	}); 
-
-router.use(bodyParser.urlencoded({ extended: false }))
-router.use(bodyParser.json())
 
 router.get('/', function(req, res){
 	let query = req.query;
