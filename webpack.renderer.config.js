@@ -10,6 +10,7 @@ const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
+
 let rendererConfig = {
   devtool: '#eval-source-map',
   devServer: { overlay: true },
