@@ -3,10 +3,10 @@
     <div class="header">
       <el-col v-if="!$store.state.loading">
         <el-menu class="nav-top" theme="dark" default-active="dashboard" mode="horizontal" @select="onSelect">
-          <el-menu-item index="dashboard">Dashboard</el-menu-item>
-          <el-menu-item index="loading">Loading</el-menu-item>
-          <el-submenu index="3">
-            <template slot="title">Workspace</template>
+          <el-menu-item index="dashboard">DASHBOARD</el-menu-item>
+          <el-menu-item index="anime-new">ANIME</el-menu-item>
+          <el-submenu index="option">
+            <template slot="title"><i class="el-icon-setting"></i>SETTING</template>
             <el-menu-item index="2-1">item one</el-menu-item>
             <el-menu-item index="2-2">item two</el-menu-item>
             <el-menu-item index="2-3">item three</el-menu-item>
@@ -14,9 +14,7 @@
         </el-menu>
       </el-col>
     </div>
-    <div class="container">
-      <router-view></router-view>
-    </div>
+    <router-view class="container"></router-view>
     <div class="footer"></div>
   </div>
 </template>
@@ -33,7 +31,7 @@
     methods: {
       onSelect (route, keyPath) {
         // console.log(route, keyPath)
-        this.$router.push(route)
+        this.$router.push({ name: route })
       },
       handleSelect2 () {
 
@@ -74,17 +72,22 @@
   .nav-top {
     border-radius: 0px;
   }
+  .header {
+    height: 60px;
+  }
   .container {
-    padding-top: 60px;
-    padding-bottom: 25px;
-    height: calc(100% - 60px);
+    background-color: #FFF;
+    height: calc(100% - 5px);
+  }
+  .panel-main.el-col {
+    padding: 25px;
   }
   .footer {
     position: absolute;
     bottom: 0px;
     width: 100%;
-    height: 10px;
-    background-color: #d6d6d6;
+    height: 5px;
+    background-color: #324157;
     font-size: 11px;
     font-weight: bold;
     color: #585858;

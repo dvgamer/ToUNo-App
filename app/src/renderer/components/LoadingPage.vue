@@ -1,6 +1,6 @@
 <template>
   <div class="panel-center">
-    <img src="./LandingPageView/assets/logo.png" alt="electron-vue">
+    <img src="./assets/logo.png" alt="electron-vue">
     <h1 v-text="process"></h1>
   </div>
 </template>
@@ -28,24 +28,23 @@
       let vm = this
       localforage.getItem('anilist-token').then(data => {
         if (data && data.expires && moment(data.expires * 1000) > moment()) {
-          console.log('req', data)
+          return data
         } else {
-          return axios({
-            method: 'post',
-            url: '/anilist/login'
-          }).then(res => {
-            console.log('req', res.data)
-            if (res.data.access_token) {
-              return localforage.setItem('anilist-token', res.data)
+          return axios({ url: '/anilist/login' }).then(res => {
+            if (res.data && res.data.expires) {
+              return localforage.setItem('anilist-token', res.data).then(() => { return res.data })
             } else {
               shell.openExternal('https://touno.co/auth/anilist')
-              vm.process = `RESTART NOW...`
+              throw new Error(`RESTART NOW`)
             }
-          }).catch(err => {
-            err = typeof err.response === 'object' ? err.response.status : err
-            vm.process = `SERVER DOWN ${err}`
           })
         }
+      }).then(data => {
+        vm.process = `UPDATE TOKEN...`
+        store.commit('loading')
+        this.$router.push('dashboard')
+      }).catch(err => {
+        vm.process = `${typeof err.response === 'object' ? `SERVER DOWN ${err.response.status}` : err}`
       })
       // setTimeout(() => {
       //   store.commit('loading')

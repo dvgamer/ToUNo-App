@@ -1,6 +1,8 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain as ipc, dialog } from 'electron'
+
+require('./anime')()
 
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
@@ -12,10 +14,10 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    width: 1080,
-    minWidth: 680,
-    minHeight: 440,
-    height: 840,
+    width: 950,
+    minWidth: 950,
+    minHeight: 600,
+    height: 600,
     title: app.getName()
   })
 
@@ -24,6 +26,7 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
 
   // eslint-disable-next-line no-console
   console.log('mainWindow opened')
