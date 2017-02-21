@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="header">
-      <el-col v-if="!$store.state.loading">
+      <el-col v-if="$store.getters.onEventLoaded">
         <el-menu class="nav-top" theme="dark" default-active="dashboard" mode="horizontal" @select="onSelect">
           <el-menu-item index="dashboard">DASHBOARD</el-menu-item>
           <el-menu-item index="anime-new">ANIME</el-menu-item>
@@ -44,25 +44,16 @@
 </script>
 
 <style>
-  @import url(https://fonts.googleapis.com/css?family=Lato:300);
 
   * {
     margin: 0;
     padding: 0;
   }
-
   html,
   body { height: 100%; }
-  /*#app { width: 100%; height: 100%; }*/
   body {
-    background:
-      radial-gradient(
-        ellipse at center,
-        rgba(255, 255, 255, 1) 0%,
-        rgba(229, 229, 229, .85) 100%
-      );
     display: flex;
-    font-family: Lato, Helvetica, sans-serif;
+    font-family: 'Lato', Helvetica, sans-serif;
   }
   #app { 
     width: 100%;

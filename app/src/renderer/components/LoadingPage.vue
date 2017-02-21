@@ -30,7 +30,7 @@
         if (data && data.expires && moment(data.expires * 1000) > moment()) {
           return data
         } else {
-          return axios({ url: '/anilist/login' }).then(res => {
+          return axios({ method: 'post', url: '/anilist/login' }).then(res => {
             if (res.data && res.data.expires) {
               return localforage.setItem('anilist-token', res.data).then(() => { return res.data })
             } else {
@@ -41,7 +41,7 @@
         }
       }).then(data => {
         vm.process = `UPDATE TOKEN...`
-        store.commit('loading')
+        store.commit('loaded')
         this.$router.push('dashboard')
       }).catch(err => {
         vm.process = `${typeof err.response === 'object' ? `SERVER DOWN ${err.response.status}` : err}`
