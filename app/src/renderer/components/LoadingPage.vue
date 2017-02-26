@@ -6,7 +6,6 @@
 </template>
 <script>
   import { shell } from 'electron'
-  import moment from 'moment'
   import localforage from 'localforage'
 
   import store from 'renderer/vuex/store'
@@ -27,11 +26,11 @@
     created () {
       let vm = this
       localforage.getItem('anilist-token').then(data => {
-        if (data && data.expires && moment(data.expires * 1000) > moment()) {
+        if (data) {
           return data
         } else {
-          return axios({ method: 'post', url: '/anilist/login' }).then(res => {
-            if (res.data && res.data.expires) {
+          return axios({ method: 'post', url: '/anilist' }).then(res => {
+            if (res.data) {
               return localforage.setItem('anilist-token', res.data).then(() => { return res.data })
             } else {
               shell.openExternal('https://touno.co/auth/anilist')

@@ -48,7 +48,6 @@
     if (path) {
       anime.source = path[0]
     }
-    // store.commit('setSource', path[0])
   })
   ipc.on('list-anime', (e, data) => {
     store.commit('anime_wait')
@@ -57,14 +56,7 @@
       anime.items = data.items
       store.commit('anime_saved', anime)
       store.commit('anime_cb')
-      // axios({
-      //   method: 'post',
-      //   url: '/anime/saved',
-      //   data: anime
-      // }).then(res => {
-      // })
-    } else {
-
+      console.log(anime)
     }
   })
 

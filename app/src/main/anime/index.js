@@ -20,9 +20,10 @@ module.exports = function() {
     if (fs.existsSync(anime.source)) {
       var items = [], totalTime = 0;
 
-      let all = fs.readdirSync(anime.source).map(folder_name => {
+      let all = fs.readdirSync(anime.source).map((folder_name, index) => {
         let item = {
-          varify: true,
+          index: index,
+          verify: true,
           anilist: false,
           name: folder_name,
           path: `${anime.source}\\${folder_name}`,
@@ -33,13 +34,16 @@ module.exports = function() {
         return () => {
           let def = Q.defer(), walker = walk.walk(item.path, {}), time = Math.floor(Date.now());
           walker.on("file", function (root, file, next) {
-            let list = {
-              uid: file.uid,
-              name: file.name,
-              size: file.size,
-              ctime: file.ctime
+            let ignore = [ 'Desktop.ini', 'AnimeImage.bmp' ]
+            if (ignore.indexOf(file.name) == -1) {
+              let list = {
+                uid: file.uid,
+                name: file.name,
+                size: file.size,
+                ctime: file.ctime
+              }
+              item.files.push(list)
             }
-            item.files.push(list)
             next();
           });
 
