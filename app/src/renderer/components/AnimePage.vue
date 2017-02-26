@@ -1,23 +1,11 @@
 <template>
   <div>
     <div class="el-col el-menu">
-      <el-menu default-active="anime-new" style="height:100%" @select="onSelect">
-        <el-menu-item index="anime-new"><i class="el-icon-plus"></i>New Item</el-menu-item>
+      <el-menu default-active="anime" style="height:100%" @select="onSelect">
+        <el-menu-item index="anime"><i :class="anime_name?'el-icon-edit':'el-icon-plus'">
+          </i><span v-text="anime_name?'Find Item':'New Item'"></span>
+        </el-menu-item>
         <hr style="border-top-color: rgba(0, 0, 0, 0.05);">
-        <el-submenu index="list">
-          <template slot="title"><i class="el-icon-message"></i>Items</template>
-          <el-menu-item-group title="Group One">
-            <el-menu-item index="1-1">item one</el-menu-item>
-            <el-menu-item index="1-2">item one</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="Group Two">
-            <el-menu-item index="1-3">item three</el-menu-item>
-          </el-menu-item-group>
-          <el-submenu index="1-4">
-            <template slot="title">item four</template>
-            <el-menu-item index="1-4-1">item one</el-menu-item>
-          </el-submenu>
-        </el-submenu>
       </el-menu>
     </div>
     <div class="el-col el-main">
@@ -27,12 +15,18 @@
 </template>
 
 <script>
+  import store from 'renderer/vuex/store'
   export default {
     name: 'dashboard-page',
-
+    store,
     methods: {
       onSelect (route, keyPath) {
-        this.$router.push({ name: route })
+        this.$router.push({ name: this.anime_name ? 'anime-list' : 'anime-new' })
+      }
+    },
+    computed: {
+      anime_name () {
+        return this.$store.state.anime.saved
       }
     },
     created () {

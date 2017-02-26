@@ -1,10 +1,10 @@
 <template>
-  <div id="app">
+  <div id="app" v-loading.body="$store.getters.onWait">
     <div class="header">
-      <el-col v-if="$store.getters.onEventLoaded">
+      <el-col v-if="$store.getters.onLoaded">
         <el-menu class="nav-top" theme="dark" default-active="dashboard" mode="horizontal" @select="onSelect">
           <el-menu-item index="dashboard">DASHBOARD</el-menu-item>
-          <el-menu-item index="anime-new">ANIME</el-menu-item>
+          <el-menu-item index="anime">ANIME</el-menu-item>
           <el-submenu index="option">
             <template slot="title"><i class="el-icon-setting"></i>SETTING</template>
             <el-menu-item index="2-1">item one</el-menu-item>
@@ -12,6 +12,13 @@
             <el-menu-item index="2-3">item three</el-menu-item>
           </el-submenu>
         </el-menu>
+        <el-alert
+          v-if="$store.state.offline"
+          class="offline"
+          title="anilist.co server is offline, please restart app."
+          type="error"
+          show-icon>
+        </el-alert>
       </el-col>
     </div>
     <router-view class="container"></router-view>
@@ -30,8 +37,11 @@
     },
     methods: {
       onSelect (route, keyPath) {
-        // console.log(route, keyPath)
-        this.$router.push({ name: route })
+        if (route === 'anime') {
+          this.$router.push({ name: this.$store.state.anime.saved ? 'anime-list' : 'anime-new' })
+        } else {
+          this.$router.push({ name: route })
+        }
       },
       handleSelect2 () {
 
@@ -60,8 +70,9 @@
     height: 100%;
     overflow: hidden; 
   }
-  .nav-top {
+  .nav-top, .el-alert.offline {
     border-radius: 0px;
+    z-index: 1;
   }
   .header {
     height: 60px;

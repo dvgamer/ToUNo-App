@@ -7,21 +7,22 @@
             <el-col :span="20">
               <el-form label-position="top" label-width="100px">
                 <el-form-item label="Name" prop="name">
-                  <el-input placeholder="Item name" :autofocus="true" v-model="anime_name"></el-input>
+                  <el-input placeholder="Item name" :autofocus="true" v-model="anime.name"></el-input>
                 </el-form-item>
                 <el-form-item label="Directory" prop="dir">
                   <el-input
                     placeholder="Path anime folder"
                     icon="upload2"
-                    v-model="anime_source"
+                    v-model="anime.source"
                     :on-icon-click="onBrowse">
                   </el-input>
                 </el-form-item>
                 <el-form-item>
                   <el-button 
                     type="primary" 
-                    @click="submit">Scan</el-button>
-                </el-form-item>
+                    :loading="$store.state.anime.wait"
+                    @click="submit">{{$store.state.anime.wait ? 'Please wait...' : 'Scan directory'}}</el-button>
+                </el-form-item> 
               </el-form>
             </el-col>
           </el-row>
@@ -33,24 +34,35 @@
 
 <script>
   import { ipcRenderer as ipc } from 'electron'
-  import axios from '../../../lib/axios'
+  // import axios from '../../../lib/axios'
   import store from 'renderer/vuex/store'
 
-  ipc.on('selected-anime', (e, path) => {
-    store.commit('setSource', path[0])
-  })
-  ipc.on('list-anime', (e, anime) => {
-    console.log('list-anime', anime)
-    if (anime.found) {
-      store.commit('setName', '')
-      store.commit('setSource', '')
-      axios({
-        method: 'post',
-        url: '/anime/saved',
-        data: anime
-      }).then(res => {
+  let anime = {
+    name: '',
+    source: '',
+    items: []
+  }
 
-      })
+  ipc.on('selected-anime', (e, path) => {
+    store.commit('WAIT')
+    if (path) {
+      anime.source = path[0]
+    }
+    // store.commit('setSource', path[0])
+  })
+  ipc.on('list-anime', (e, data) => {
+    store.commit('anime_wait')
+    console.log('list-anime', data)
+    if (data.found) {
+      anime.items = data.items
+      store.commit('anime_saved', anime)
+      store.commit('anime_cb')
+      // axios({
+      //   method: 'post',
+      //   url: '/anime/saved',
+      //   data: anime
+      // }).then(res => {
+      // })
     } else {
 
     }
@@ -60,41 +72,26 @@
     store,
     data () {
       return {
-      }
-    },
-    computed: {
-      anime_store () {
-        return this.$store.getters.Anime
-      },
-      anime_name: {
-        set (newValue) {
-          this.$store.commit('setName', newValue)
-        }
-      },
-      anime_source: {
-        get () {
-          return this.anime_store.source
-        },
-        set (newValue) {
-          this.$store.commit('setSource', newValue)
-        }
+        anime: anime
       }
     },
     methods: {
       submit () {
-        let vm = this
-        console.log(vm.anime_store)
-        ipc.send('scan-anime', vm.anime_store)
+        this.$store.commit('anime_wait')
+        this.$store.commit('anime_cb', () => {
+          this.$router.push({ name: 'anime-list' })
+        })
+        ipc.send('scan-anime', this.anime)
       },
       onBrowse () {
+        this.$store.commit('WAIT')
         ipc.send('open-anime')
       }
     },
     created () {
-
     },
     destroyed () {
-      this.$store.commit('setSource', '')
+      // this.$store.commit('setSource', '')
     }
   }
 </script>

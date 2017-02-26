@@ -41,9 +41,11 @@
         }
       }).then(data => {
         vm.process = `UPDATE TOKEN...`
-        store.commit('loaded')
+        store.commit('LOADED', true)
         this.$router.push('dashboard')
       }).catch(err => {
+        store.commit('LOADED', false)
+        this.$router.push('dashboard')
         vm.process = `${typeof err.response === 'object' ? `SERVER DOWN ${err.response.status}` : err}`
       })
       // setTimeout(() => {
