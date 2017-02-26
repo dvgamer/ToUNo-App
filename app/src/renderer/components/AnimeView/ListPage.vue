@@ -2,14 +2,15 @@
   <div>
     <el-row style="margin-bottom:10px;">
       <el-col :span="24" >
-        <el-button v-if="!ApplyAll" type="info" icon="search" :loading="search" @click="onSearchItems">Search Anime</el-button>
-        <el-button v-else type="primary" icon="upload" @click="onSaved">Save Anime</el-button>
+        <el-button type="info" icon="search" :loading="search" @click="onSearchItems">Search Anime</el-button>
+        <el-button type="warning" icon="upload" @click="onSaved">Save Anime</el-button>
       </el-col>
     </el-row>
     <el-row>
       <el-col :span="24">
         <el-table
           :data="Items"
+          column-key="index"
           highlight-current-row
           @current-change="onGetItem"
           style="width: 100%">
@@ -26,14 +27,17 @@
           <el-table-column
             label="Name">
             <template scope="scope">
-              <el-input
-                v-if="scope.$index == rowItem.index"
-                size="small"
-                placeholder="Search name anime"
-                @change="onChangeName"
-                :value="scope.row.name">
-              </el-input>
-              <span v-else v-text="scope.row.name"></span>
+              <div v-if="scope.$index === rowItem.index" style="height:41px;margin-top: 6px;">
+                <el-input
+                  placeholder="Search name anime"
+                  @change="onChangeName"
+                  :value="scope.row.name">
+                </el-input>
+              </div>
+              <div v-else style="height:47px">
+                <div>{{scope.row.name}}</div>
+                <div style="font-size:0.8rem"><b>{{getAnimePossible(scope.row)}}</b></div>
+              </div>
             </template>
           </el-table-column>
           <el-table-column
@@ -74,14 +78,14 @@
         </el-table>
         <el-dialog
           size="full"
-          :show-close="false"
+          :show-close="true"
           :close-on-click-modal="false"
           :close-on-press-escape="false"
           :title="'Anime ' + (rowItem.name || '')" 
           v-model="dialogVisible">
           <el-table 
           highlight-current-row
-          @current-change="onGetAnime"
+          @row-click="onGetAnime"
           :data="rowItem.anime">
             <el-table-column property="title_romaji" width="113">
               <template scope="scope">
@@ -96,10 +100,6 @@
               </template>
             </el-table-column>
           </el-table>
-          <span slot="footer" class="dialog-footer">
-            <el-button @click="dialogVisible = false">Cancel</el-button>
-            <el-button type="primary" @click="onConfirmAnime">Confirm</el-button>
-          </span>
         </el-dialog>
       </el-col>
     </el-row>
@@ -130,7 +130,7 @@
       ApplyAll () {
         let success = true
         this.Items.forEach(item => {
-          if (!item.anilist || item.anime.length > 1) {
+          if (!item.anilist) {
             success = false
           }
         })
@@ -138,14 +138,38 @@
       }
     },
     methods: {
+      getAnimePossible (item) {
+        let getName = 'NONE'
+        if (item.anilist) {
+          for (let index in item.anime) {
+            if (item.anime[index].id === item.anilist) {
+              getName = item.anime[index].title_romaji
+              break
+            }
+          }
+        } else if (item.anime.length === 1) {
+          getName = item.anime[0].title_romaji
+        } else if (item.anime.length > 1) {
+          item.anime.forEach(list => {
+            if (item.name === list.title_romaji) {
+              getName = list.title_romaji
+            }
+          })
+        }
+        return getName
+      },
       onSelectItem () {
         this.dialogVisible = false
       },
       onGetAnime (val) {
-        this.rowAnime = val
+        this.$store.commit('anime_anilist', { index: this.rowItem.index, id: val.id })
+        this.dialogVisible = false
       },
       onGetItem (val) {
-        if (!this.search && !val.anime.length) this.rowItem = val
+        if (!this.search) this.rowItem = val
+      },
+      onChangeName (val) {
+        this.$store.commit('anime_change_folder', { index: this.rowItem.index, name: val })
       },
       onSearchItems () {
         let all = []
@@ -174,21 +198,54 @@
           console.log(err)
         })
       },
-      onChangeName (val) {
-        this.$store.commit('anime_change_folder', { index: this.rowItem.index, name: val })
-      },
       onSaved () {
-
+        let all = []
+        let vm = this
+        // [.ShellClassInfo]
+        // ConfirmFileOp=0
+        // NoSharing=1
+        // IconFile=Folder.ico
+        // IconIndex=0
+        // InfoTip=Some sensible information.
+        let iniDesktop = {
+          '.ShellClassInfo': {
+            ConfirmFileOp: 0,
+            NoSharing: 1,
+            IconFile: 'AnimeImage.bmp',
+            IconIndex: 0,
+            InfoTip: 'value'
+          },
+          'ToUNo-Anime': {
+            id: ''
+          }
+        }
+        vm.Items.forEach((item, index) => {
+          all.push(() => {
+            let def = Q.defer()
+            axios({
+              method: 'post',
+              form: { },
+              url: `/anilist/saved`
+            }).then(res => {
+              console.log(index, res.data.length, item.name)
+              vm.$store.commit('anime_search', { index: index, item: res.data })
+              def.resolve()
+            })
+            return def.promise
+          })
+        })
+        async.series(all).then(() => {
+          console.log(iniDesktop)
+        }).catch(err => {
+          console.log(err)
+        })
       },
       onToggle (index) {
         this.$store.commit('anime_remove_items', index)
       },
       onSelectAnime (index) {
         this.dialogVisible = true
-        this.rowAnime = null
-      },
-      onConfirmAnime () {
-        this.dialogVisible = false
+        this.rowAnime = {}
       }
     }
   }

@@ -24,7 +24,7 @@ module.exports = function() {
         let item = {
           index: index,
           verify: true,
-          anilist: false,
+          anilist: 0,
           name: folder_name,
           path: `${anime.source}\\${folder_name}`,
           files: [],

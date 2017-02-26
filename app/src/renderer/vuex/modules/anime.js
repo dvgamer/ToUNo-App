@@ -24,6 +24,9 @@ const mutations = {
   anime_change_folder (state, data) {
     state.saved.items[data.index].name = data.name
   },
+  anime_anilist (state, data) {
+    state.saved.items[data.index].anilist = data.id
+  },
   anime_search (state, data) {
     state.saved.items[data.index].anime = data.item
   },
