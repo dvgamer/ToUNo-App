@@ -2,6 +2,8 @@ import { ipcMain as ipc, dialog } from 'electron'
 import fs from 'fs'
 
 const walk = require('walk')
+const async = require('async-q');
+const Q     = require('q');
 
 module.exports = function() {
 
@@ -9,34 +11,64 @@ module.exports = function() {
     dialog.showOpenDialog({
       properties: ['openDirectory']
     }, function (files) {
-      if (files) e.sender.send('selected-anime', files)
+      e.sender.send('selected-anime', files)
     })
   })
 
   ipc.on('scan-anime', function (e, anime) {
+
     if (fs.existsSync(anime.source)) {
-      let items = fs.readdirSync(anime.source)
-      let walker = walk.walk(anime.source, {});
-      walker.on("file", function (root, file, next) {
+      var items = [], totalTime = 0;
+
+      let all = fs.readdirSync(anime.source).map(folder_name => {
         let item = {
-          uid: file.uid,
-          name: file.name,
-          size: file.size,
-          ctime: file.ctime
+          varify: true,
+          anilist: false,
+          name: folder_name,
+          path: `${anime.source}\\${folder_name}`,
+          files: [],
+          anime: {}
+        };
+
+        return () => {
+          let def = Q.defer(), walker = walk.walk(item.path, {}), time = Math.floor(Date.now());
+          walker.on("file", function (root, file, next) {
+            let list = {
+              uid: file.uid,
+              name: file.name,
+              size: file.size,
+              ctime: file.ctime
+            }
+            item.files.push(list)
+            next();
+          });
+
+
+          console.log(`Tasks-${item.name} Begin...`);
+          walker.on("errors", function (root, nodeStatsArray, next) {
+            console.log(`error-${root}`); 
+            next();
+          });
+
+          walker.on("end", function () {
+            let elapsed = Math.floor(Date.now()) - time;
+            totalTime += elapsed;
+            items.push(item);
+            console.log(`Tasks-${item.name} Successful (${(elapsed/1000).toFixed(2)}s`); 
+            def.resolve();
+          });
+          return def.promise;
         }
-        next();
-      });
+      })
 
-      walker.on("errors", function (root, nodeStatsArray, next) {
-        next();
-      });
 
-      walker.on("end", function () {
-        console.log("Anime Items:", anime.source)
-        e.sender.send('list-anime', { found: true, items: items })
+      async.series(all).then(results => {
+        console.log(`Total ${all.length} Tasks Successful (${(totalTime/1000).toFixed(2)}s)`); 
+        e.sender.send('list-anime', { found: true, items: items });
       });
     } else {
-      e.sender.send('list-anime', { found: false, items: [] })
+      e.sender.send('list-anime', { found: false, items: [] });
     }
+
   })
 }

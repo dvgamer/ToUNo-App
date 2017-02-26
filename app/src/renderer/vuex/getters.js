@@ -1,3 +1,3 @@
-export const onEventLoaded = state => state.onEvent.loaded
+export const onLoaded = state => state.onEvent.loaded
 
-export const Anime = state => state.anime.new
+export const onWait = state => state.onEvent.wait

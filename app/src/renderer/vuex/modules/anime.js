@@ -1,16 +1,29 @@
 const state = {
-  new: {
-    name: '',
-    source: ''
-  }
+  saved: null,
+  cb: () => { },
+  wait: false
 }
 
 const mutations = {
-  setSource (state, data) {
-    state.new.source = data
+  anime_wait (state) {
+    state.wait = !state.wait
   },
-  setName (state, data) {
-    state.new.name = data
+  anime_saved (state, anime) {
+    state.saved = anime
+  },
+  anime_cb (state, cb) {
+    if (cb) {
+      state.cb = cb
+    } else {
+      state.cb()
+    }
+  },
+  anime_remove_items (state, index) {
+    state.saved.items[index].verify = false
+  },
+  anime_reset (state) {
+    state.saved = null
+    state.wait = false
   }
 }
 
