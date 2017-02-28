@@ -8,8 +8,26 @@
 </template>
 
 <script>
+  import store from 'renderer/vuex/store'
   export default {
-    name: 'dashboard-page'
+    store,
+    name: 'dashboard-page',
+    data () {
+      return {
+      }
+    },
+    methods: {
+    },
+    created () {
+      if (this.$store.getters.offline && !this.$store.getters.alert) {
+        this.$store.commit('LOADED')
+        this.$message({
+          showClose: false,
+          message: 'Oops, anilist.co server down or authication fail.',
+          type: 'error'
+        })
+      }
+    }
   }
 </script>
 

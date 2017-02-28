@@ -1,13 +1,17 @@
 const state = {
   offline: false,
   loaded: false,
+  alert: false,
   wait: false
 }
 
 const mutations = {
-  LOADED (state, offline) {
-    state.offline = !offline
+  ONLINE (state, online) {
+    state.offline = !online
     state.loaded = true
+  },
+  LOADED (state) {
+    state.alert = true
   },
   WAIT (state) {
     state.wait = !state.wait

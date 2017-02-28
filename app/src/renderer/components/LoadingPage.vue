@@ -5,7 +5,7 @@
   </div>
 </template>
 <script>
-  import { shell } from 'electron'
+  // import { shell } from 'electron'
   import localforage from 'localforage'
 
   import store from 'renderer/vuex/store'
@@ -25,25 +25,23 @@
     },
     created () {
       let vm = this
-      localforage.getItem('anilist-token').then(data => {
-        if (data) {
-          return data
+      return axios({ method: 'post', url: '/anilist' }).then(res => {
+        console.log('get', res.data.token)
+        if (res.data.token) {
+          return localforage.setItem('anilist-token', res.data).then(() => { return res.data })
         } else {
-          return axios({ method: 'post', url: '/anilist' }).then(res => {
-            if (res.data) {
-              return localforage.setItem('anilist-token', res.data).then(() => { return res.data })
-            } else {
-              shell.openExternal('https://touno.co/auth/anilist')
-              throw new Error(`RESTART NOW`)
-            }
-          })
+          // shell.openExternal('https://touno.co/auth/anilist')
+          throw new Error(`RESTART NOW`)
         }
       }).then(data => {
+        console.log('Connecting... [SUCCESS]')
         vm.process = `UPDATE TOKEN...`
-        store.commit('LOADED', true)
+        store.commit('ONLINE', true)
         this.$router.push('dashboard')
       }).catch(err => {
-        store.commit('LOADED', false)
+        console.log('Connecting... [FAIL]')
+        vm.process = `OFFLINE MODE...`
+        store.commit('ONLINE', false)
         this.$router.push('dashboard')
         vm.process = `${typeof err.response === 'object' ? `SERVER DOWN ${err.response.status}` : err}`
       })

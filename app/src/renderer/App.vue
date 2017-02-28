@@ -11,14 +11,8 @@
             <el-menu-item index="2-2">item two</el-menu-item>
             <el-menu-item index="2-3">item three</el-menu-item>
           </el-submenu>
+          <el-menu-item v-if="!$store.getters.offline" class="btn-sign" index="sign" >SIGN IN</el-menu-item>
         </el-menu>
-        <el-alert
-          v-if="$store.state.offline"
-          class="offline"
-          title="anilist.co server is offline, please restart app."
-          type="error"
-          show-icon>
-        </el-alert>
       </el-col>
     </div>
     <router-view class="container"></router-view>
@@ -97,4 +91,13 @@
   .el-menu-item > a {
     text-decoration: none;
   }
+  .el-menu-item.btn-sign {
+    float: right;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  .el-menu-item.btn-sign:hover {
+    border-bottom: 5px solid #FF4949;
+  }
+
 </style>
