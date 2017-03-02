@@ -3,7 +3,7 @@
     <el-row style="margin-bottom:10px;">
       <el-col :span="24" >
         <el-button v-if="!$store.getters.offline" type="info" icon="search" :loading="search" @click="onSearchItems">Search Anime</el-button>
-        <el-button type="warning" icon="upload" @click="onSaved">Save Anime</el-button>
+        <el-button type="warning" icon="upload" :loading="save" @click="onSaved">Save Anime</el-button>
       </el-col>
     </el-row>
     <el-row>
@@ -27,7 +27,7 @@
           <el-table-column
             label="Name">
             <template scope="scope">
-              <div v-if="scope.$index === rowItem.index && getAnime === 'false'" style="height:41px;margin-top: 6px;">
+              <div v-if="scope.$index === rowItem.index && !getAnime" style="height:41px;margin-top: 6px;">
                 <el-input
                   placeholder="Search name anime"
                   @change="onChangeName"
@@ -78,10 +78,11 @@
         </el-table>
         <el-dialog
           size="full"
+          @close="onGetAnime"
           :show-close="true"
           :close-on-click-modal="false"
           :close-on-press-escape="false"
-          :title="'Anime ' + (rowItem.name || '')" 
+          :title="'Anime Folder -- ['+(rowItem.name || '')+']'" 
           v-model="dialogVisible">
           <el-table 
           highlight-current-row
@@ -97,6 +98,11 @@
                 <p><b>English:</b> {{scope.row.title_english}}</p>
                 <p><b>Romanji:</b> {{scope.row.title_romaji}}</p>
                 <p><b>Japanese:</b> {{scope.row.title_japanese}}</p>
+                <p><b>Type:</b> {{scope.row.type}}</p>
+                <p><b>start_date:</b> {{scope.row.start_date}}</p>
+                <p><b>season:</b> {{scope.row.season}}</p>
+                <p><b>total_episodes:</b> {{scope.row.total_episodes}}</p>
+                <p><b>airing_status:</b> {{scope.row.airing_status}}</p>
               </template>
             </el-table-column>
           </el-table>
@@ -106,11 +112,16 @@
   </div>
 </template>
 <script>
+  import { ipcRenderer as ipc } from 'electron'
   import async from 'async-q'
   import Q from 'q'
 
   import axios from '../../../lib/axios'
   import store from 'renderer/vuex/store'
+
+  ipc.on('saved-anime', (e, event) => {
+    console.log('saved-anime', event)
+  })
 
   export default {
     store,
@@ -118,7 +129,8 @@
       return {
         dialogVisible: false,
         search: false,
-        getAnime: false,
+        save: false,
+        getAnime: null,
         rowItem: { anime: [] }
       }
     },
@@ -143,29 +155,15 @@
           vm.$store.commit('anime_anilist', { index: item.index, id: item.anime[0].id })
           getName = item.anime[0].title_romaji
         } else if (item.anime.length > 1) {
-          let getName = (item.name).match(/[A-Z0-9\s]+/ig).join('')
+          let getName = (item.name).replace(/\[.*?\]/ig, '').trim().match(/[A-Z0-9\s]+/ig).join('').trim()
           item.anime.forEach(list => {
-            if (getName === list.title_romaji) {
+            if (getName.toLowerCase() === list.title_romaji.toLowerCase()) {
               vm.$store.commit('anime_anilist', { index: item.index, id: list.id })
               getName = list.title_romaji
             }
           })
         }
         return getName
-      },
-      onSelectItem () {
-        this.dialogVisible = false
-      },
-      onGetAnime (val) {
-        this.$store.commit('anime_anilist', { index: this.rowItem.index, id: val.id })
-        this.dialogVisible = false
-      },
-      onGetItem (val) {
-        this.getAnime = false
-        if (!this.search) this.rowItem = val
-      },
-      onChangeName (val) {
-        this.$store.commit('anime_change_folder', { index: this.rowItem.index, name: val })
       },
       onSearchItems () {
         let all = []
@@ -175,10 +173,9 @@
         vm.Items.forEach((item, index) => {
           all.push(() => {
             let def = Q.defer()
-            if (item.verify && !item.anime.length) {
-              let getName = (item.name).match(/[A-Z0-9\s]+/ig).join('')
+            if (!item.anilist || !item.anime.length) {
+              let getName = (item.name).replace(/\[.*?\]/ig, '').trim().match(/[A-Z0-9\s]+/ig).join('').trim()
               axios({ method: 'post', url: `/anilist/search/${getName}` }).then(res => {
-                console.log(index, res.data.length, item.name)
                 vm.$store.commit('anime_search', { index: index, item: res.data })
                 def.resolve()
               })
@@ -195,45 +192,42 @@
         })
       },
       onSaved () {
-        let all = []
         let vm = this
-        // [.ShellClassInfo]
-        // ConfirmFileOp=0
-        // NoSharing=1
-        // IconFile=Folder.ico
-        // IconIndex=0
-        // InfoTip=Some sensible information.
-        let iniDesktop = {
-          '.ShellClassInfo': {
-            ConfirmFileOp: 0,
-            NoSharing: 1,
-            IconFile: 'AnimeImage.bmp',
-            IconIndex: 0,
-            InfoTip: 'value'
-          },
-          'ToUNo-Anime': {
-            id: ''
-          }
-        }
-        vm.Items.forEach((item, index) => {
-          all.push(() => {
-            let def = Q.defer()
-            axios({
-              method: 'post',
-              form: { },
-              url: `/anilist/save`
-            }).then(res => {
-              console.log(index, res.data.length, item.name)
-              vm.$store.commit('anime_search', { index: index, item: res.data })
-              def.resolve()
+        let all = []
+
+        vm.save = true
+        vm.Items.forEach(item => {
+          if (item.anilist) {
+            let getAnime = {
+              id: null,
+              index: item.index,
+              path: item.path,
+              anime: item.anime.filter(list => { return list.id === item.anilist })[0].id,
+              files: item.files
+            }
+
+            all.push(() => {
+              return axios({ method: 'post', data: getAnime, url: `/anilist/save`, json: true }).then(res => {
+                // this.$store.commit('anime_anilist', {
+                //   index: item.index,
+                //   id: res.data.id
+                // })
+                getAnime.id = res.data.id
+                getAnime.name = res.data.name
+                getAnime.thumb = res.data.thumb
+                return getAnime
+              })
             })
-            return def.promise
-          })
+          }
         })
-        async.series(all).then(() => {
-          console.log(iniDesktop)
+
+        async.series(all).then(anime => {
+          vm.save = false
+          ipc.send('save-anime', anime)
+          console.log('onSaved done.')
         }).catch(err => {
-          console.log(err)
+          vm.save = false
+          console.log('onSaved', err)
         })
       },
       onToggle (index) {
@@ -241,7 +235,16 @@
       },
       onSelectAnime (index) {
         this.dialogVisible = true
-        this.getAnime = true
+      },
+      onGetAnime (val) {
+        if (val) this.$store.commit('anime_anilist', { index: this.rowItem.index, id: val.id })
+        this.dialogVisible = false
+      },
+      onGetItem (val) {
+        if (!this.search) this.rowItem = val
+      },
+      onChangeName (val) {
+        if (val) this.$store.commit('anime_change_folder', { index: this.rowItem.index, name: val })
       }
     }
   }

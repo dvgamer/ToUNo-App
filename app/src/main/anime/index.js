@@ -1,11 +1,72 @@
 import { ipcMain as ipc, dialog } from 'electron'
+import { spawn } from 'child_process'
 import fs from 'fs'
+import ini from 'ini'
+import walk from 'walk'
+import async from 'async-q'
+import Q from 'q'
 
-const walk = require('walk')
-const async = require('async-q');
-const Q     = require('q');
+const attrib = anime => {
+  let def = Q.defer(), error = false;
+  const ls = spawn('C:/Windows/System32/attrib.exe', anime);
+  ls.stderr.on('data', data => error = true);
+  ls.on('close', (code) => {
+    if(code == 0 && !error) { def.resolve(code); } else { def.reject(code); }
+  });
+  return def.promise;
+}
+
+const desktop = anime => {
+  let def = Q.defer();
+  let iniDesktop = ini.stringify({
+    'ShellClassInfo': {
+      ConfirmFileOp: 0,
+      NoSharing: 1,
+      IconFile: 'AnimeImage.bmp',
+      IconIndex: 0,
+      InfoTip: anime.name
+    },
+    'ToUNo-Anime': {
+      id: anime.id
+    }
+  });
+
+  if (fs.existsSync(anime.path)) {
+
+  } else {
+    fs.writeFile(`${anime.path}/Desktop.ini`, new Buffer(iniDesktop), function (err) {
+      if(err) def.resolve(); else def.reject();
+    });
+  }
+
+
+
+  return def.promise;
+}
+
 
 module.exports = function() {
+  ipc.on('save-anime', function(e, Items){
+    console.log(Items)
+    // if (fs.existsSync(anime.path)) {
+
+      // console.log(`${anime.path}/Desktop.ini`)
+      // fs.writeFile(`${anime.path}/Desktop.ini`, new Buffer(iniDesktop.replace('[\.S','[.S')), function (err) {
+      //   if (!err) {
+      //     attrib([ '+s', '+h', `"${path}\\Desktop.ini"` ]).then(() => {
+      //    e.sender.send('saved-anime', { action: 'success', index: anime.index })
+      //     }).catch(() => {
+      //       e.sender.send('saved-anime', { action: 'fail', index: anime.index })
+      //     })
+      //   } else {
+      //     console.log('saved', err);
+      //     e.sender.send('saved-anime', { action: 'fail', index: anime.index })
+      //   }
+      // });
+    // } else {
+      e.sender.send('saved-anime', { action: 'fail', index: anime.index })
+    // }
+  })
 
   ipc.on('open-anime', function (e) {
     dialog.showOpenDialog({
