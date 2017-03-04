@@ -51,12 +51,12 @@
   })
   ipc.on('list-anime', (e, data) => {
     store.commit('anime_wait')
-    console.log('list-anime', data)
+    // console.log('list-anime', data)
     if (data.found) {
       anime.items = data.items
       store.commit('anime_saved', anime)
       store.commit('anime_cb')
-      console.log(anime)
+      // console.log(anime)
     }
   })
 
