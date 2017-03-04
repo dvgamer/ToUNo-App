@@ -39,7 +39,8 @@ const mutations = {
   },
   anime_save (state, data) {
     state.saved.items[data.index].name = data.name
-    state.saved.items[data.index].anime_id = data.anime_id
+    state.saved.items[data.index].duplicate = data.duplicate
+    state.saved.items[data.index].anime_id = data.id
   },
   anime_reset (state) {
     state.saved = null

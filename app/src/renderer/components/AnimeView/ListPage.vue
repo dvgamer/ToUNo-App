@@ -62,7 +62,7 @@
             align="center"
             width="95">
             <template scope="scope">
-              <div v-if="!search && !save && !scope.row.anime_id">
+              <div v-if="!search && !save && !scope.row.duplicate && !scope.row.anime_id">
                 <el-button
                   v-if="!scope.row.anime.length"
                   size="small"
@@ -76,6 +76,13 @@
                   type="success"
                   @click="onSelectAnime"
                   v-text="'SELECT'">
+                </el-button>
+              </div>
+              <div v-if="scope.row.duplicate">
+                <el-button
+                  size="small"
+                  type="success"
+                  v-text="'OPEN'">
                 </el-button>
               </div>
             </template>
@@ -215,7 +222,7 @@
               id: null,
               index: item.index,
               path: item.path,
-              anime: item.anime.filter(list => { return list.id === item.anilist })[0].id,
+              anime_id: item.anime.filter(list => { return list.id === item.anilist })[0].id,
               files: item.files
             }
 
@@ -233,9 +240,10 @@
                 getAnime.image = res.data.image
 
                 vm.$store.commit('anime_save', {
+                  id: res.data.id,
                   index: getAnime.index,
-                  anime_id: getAnime.id,
-                  name: getAnime.title_romaji
+                  duplicate: res.data.found,
+                  name: res.data.title_romaji
                 })
 
                 return getAnime
@@ -249,7 +257,7 @@
           vm.$store.commit('anime_cb', () => {
             let aWait = false
             vm.Items.forEach(item => {
-              if (!item.anime_id) aWait = true
+              if (!item.anime_id && item.duplicate) aWait = true
             })
             if (!aWait) {
               vm.$store.commit('anime_reset')
