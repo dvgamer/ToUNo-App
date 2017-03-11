@@ -2,8 +2,8 @@
   <div>
     <div class="el-col el-menu">
       <el-menu default-active="anime" style="height:100%" @select="onSelect">
-        <el-menu-item index="anime"><i :class="anime_name?'el-icon-edit':'el-icon-plus'">
-          </i><span v-text="anime_name?'Find Item':'New Item'"></span>
+        <el-menu-item index="anime"><i class="el-icon-plus">
+          </i><span v-text="'New Item'"></span>
         </el-menu-item>
         <hr style="border-top-color: rgba(0, 0, 0, 0.05);">
       </el-menu>
@@ -21,13 +21,10 @@
     store,
     methods: {
       onSelect (route, keyPath) {
-        this.$router.push({ name: this.anime_name ? 'anime-list' : 'anime-new' })
+        this.$router.push({ name: 'anime-new' })
       }
     },
     computed: {
-      anime_name () {
-        return this.$store.state.anime.saved
-      }
     },
     created () {
     }
@@ -36,14 +33,14 @@
 
 <style scoped>
   .el-menu {
-    width: 280px;
+    width: 200px;
     height: 100%;
     float:left;
   }
   .el-main {
     height: calc(100% - 90px);
     padding: 15px;
-    width: calc(100% - 310px);
+    width: calc(100% - 230px);
     float:left;
     overflow-y: scroll;
   }

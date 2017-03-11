@@ -1,32 +1,156 @@
 <template>
   <div>
-    <el-row type="flex" justify="center">
-      <el-col class="demo-block demo-box" style="width:600px;">
-        <div class="block">
-          <el-row type="flex" justify="center">
-            <el-col :span="20">
-              <el-form label-position="top" label-width="100px">
-                <el-form-item label="Name" prop="name">
-                  <el-input placeholder="Item name" :autofocus="true" v-model="anime.name"></el-input>
-                </el-form-item>
-                <el-form-item label="Directory" prop="dir">
-                  <el-input
-                    placeholder="Path anime folder"
-                    icon="upload2"
-                    v-model="anime.source"
-                    :on-icon-click="onBrowse">
-                  </el-input>
-                </el-form-item>
-                <el-form-item>
-                  <el-button 
-                    type="primary" 
-                    :loading="$store.state.anime.wait"
-                    @click="submit">{{$store.state.anime.wait ? 'Please wait...' : 'Scan directory'}}</el-button>
-                </el-form-item> 
-              </el-form>
-            </el-col>
-          </el-row>
-        </div>
+    <el-row style="margin-bottom:10px;">
+      <el-col :span="12" >
+        <el-button v-if="!$store.getters.offline" :disabled="action.save" type="info" icon="search" :loading="action.search" @click="onSearchItems">Search Anime</el-button>
+        <el-button :disabled="action.search" type="warning" icon="upload" :loading="action.save" @click="onSaveItems">Save Anime</el-button>
+      </el-col>
+      <el-col :span="12" style="text-align:right">
+        <el-button-group v-if="Items.length">
+          <el-button :disabled="action.save || action.search" type="danger" :plain="true" @click="onRefresh">
+            <i class="fa fa-refresh" aria-hidden="true"></i>
+          </el-button>
+          <el-button :disabled="action.save || action.search" type="success" :plain="true" @click="onAdd">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+          </el-button>
+        </el-button-group>
+        <el-button v-else :disabled="action.save || action.search" type="success" :plain="true" @click="onAdd">
+          <i class="fa fa-plus" aria-hidden="true"></i>
+        </el-button>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="24">
+        <el-table
+          :data="Items"
+          column-key="index"
+          highlight-current-row
+          :row-class-name="function(row,i){ return row.anime_id ? 'disabled' : '' }"
+          @row-click="onGetItem"
+          style="width: 100%">
+          <el-table-column
+            type="varify"
+            align="center"
+            width="40">
+            <template scope="scope">
+              <div v-if="!scope.row.anime_id">
+                <el-icon
+                  v-if="!scope.row.prepare"
+                  :style="{ color: scope.row.duplicate ? '#F7BA2A' : scope.row.anilist && scope.row.verify ? '#13CE66':'#e2e2e2' }" 
+                  :name="scope.row.duplicate ? 'information' : scope.row.anilist && scope.row.verify? 'circle-check':'circle-cross'">
+                </el-icon>
+                <el-icon v-else style="color: #F7BA2A" name="loading"></el-icon>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            align="center"
+            label="Episodes"
+            width="95">
+            <template scope="scope">
+              <div>{{getEpisodes(scope.row)}}</span></div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="Name">
+            <template scope="scope">
+              <div v-if="scope.$index === rowItem.index && !getAnime && !action.save && scope.row.verify" style="height:41px;margin-top: 6px;">
+                <el-input
+                  placeholder="Search name anime"
+                  @change="onChangeName"
+                  :value="scope.row.name">
+                </el-input>
+              </div>
+              <div v-else style="height:47px">
+                <div>{{scope.row.name}}</div>
+                <div style="font-size:0.8rem"><b>{{getName(scope.row)}}</b></div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            :context="_self"
+            align="left"
+            width="140">
+            <template scope="scope">
+              <div v-if="!action.search && !action.save && !scope.row.anime_id">
+                <el-button
+                  size="small"
+                  :type="!scope.row.verify?'':'danger'"
+                  @click="onToggle(scope.$index)">
+                  <i class="fa" :class="!scope.row.verify?'fa-undo':'fa-ban'" aria-hidden="true"></i>
+                </el-button>
+                <el-button
+                  v-if="(scope.row.anime || []).length"
+                  size="small"
+                  type="success"
+                  @click="onSelectAnime">
+                  <i class="fa fa-th-list" aria-hidden="true"></i>
+                </el-button>
+                <el-button
+                  v-if="scope.row.duplicate"
+                  size="small"
+                  type="success">
+                  <i class="fa fa-folder-open" aria-hidden="true"></i>
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-dialog
+          size="full"
+          @close="onGetAnime"
+          :show-close="true"
+          :close-on-click-modal="false"
+          :close-on-press-escape="false"
+          :title="'Anime Folder -- ['+(rowItem.path || '')+']'" 
+          v-model="dialogVisible">
+          <el-table 
+          highlight-current-row
+          @row-click="onGetAnime"
+          :data="(rowItem || { anime: [] }).anime">
+            <el-table-column property="title_romaji" width="113">
+              <template scope="scope">
+                <img :src="scope.row.image_url_med" width="93" height="132">
+              </template>
+            </el-table-column>
+            <el-table-column label="Name">
+              <template scope="scope">
+                <p><b>English:</b> {{scope.row.title_english}}</p>
+                <p><b>Romanji:</b> {{scope.row.title_romaji}}</p>
+                <p><b>Japanese:</b> {{scope.row.title_japanese}}</p>
+                <p><b>Type:</b> {{scope.row.type}}</p>
+                <p><b>start_date:</b> {{scope.row.start_date}}</p>
+                <p><b>season:</b> {{scope.row.season}}</p>
+                <p><b>total_episodes:</b> {{scope.row.total_episodes}}</p>
+                <p><b>airing_status:</b> {{scope.row.airing_status}}</p>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-dialog>
+        <el-dialog
+          @close="onGetAnime"
+          :show-close="!$store.state.anime.loadding"
+          :close-on-click-modal="!$store.state.anime.loadding"
+          :close-on-press-escape="!$store.state.anime.loadding"
+          title="Anime Scan Directory -- add item lists" 
+          v-model="dialogNew.show">
+          <el-form label-position="top" label-width="100px">
+            <el-form-item>
+              <el-input
+                placeholder="Path anime folder"
+                icon="upload2"
+                v-model="setPath"
+                :on-icon-click="onAddBrowse">
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button 
+                type="primary" 
+                :loading="$store.state.anime.loadding"
+                @click="onAddAnime">{{$store.state.anime.loadding ? 'Please wait...' : 'Scan directory'}}</el-button>
+            </el-form-item> 
+          </el-form>
+        </el-dialog>
       </el-col>
     </el-row>
   </div>
@@ -34,73 +158,258 @@
 
 <script>
   import { ipcRenderer as ipc } from 'electron'
-  // import axios from '../../../lib/axios'
+  import async from 'async-q'
+  import Q from 'q'
+
+  import axios from '../../../lib/axios'
   import store from 'renderer/vuex/store'
 
-  let anime = {
-    name: '',
-    source: '',
-    items: []
-  }
+  ipc.on('CLIENT_GET_FOLDER_ANIME', (e, path) => {
+    store.commit('APP-PAUSE')
+    if (path && path[0]) {
+      store.commit('anime-set_path', path[0])
+    }
+  })
 
-  ipc.on('selected-anime', (e, path) => {
-    store.commit('WAIT')
-    if (path) {
-      anime.source = path[0]
-    }
-  })
-  ipc.on('list-anime', (e, data) => {
-    store.commit('anime_wait')
-    // console.log('list-anime', data)
+  ipc.on('CLIENT_GET_LIST_ANIME', (e, data) => {
+    store.commit('anime-loadding')
     if (data.found) {
-      anime.items = data.items
-      store.commit('anime_saved', anime)
-      store.commit('anime_cb')
-      // console.log(anime)
+      // getItems = data.items
+      store.commit('anime-add_items', data.items)
+    } else {
+      store.commit('anime-message', {
+        message: 'anime folder is not found.',
+        type: 'warning'
+      })
     }
   })
+
+  // ipc.on('verify-anime', (e, event) => {
+  //   if (event.success) {
+  //     store.commit('anime_cb')
+  //   } else {
+  //     console.log('verify-anime saved fail.')
+  //   }
+  // })
 
   export default {
     store,
     data () {
       return {
-        anime: anime
+        dialogNew: {
+          show: false,
+          loading: false,
+          source: ''
+        },
+        action: {
+          search: false,
+          save: false
+        },
+        dialogVisible: false,
+        getAnime: null,
+        rowItem: { anime: [] }
       }
+    },
+    computed: {
+      setPath: {
+        get: function () {
+          return this.$store.state.anime.path || ''
+        },
+        set: function (nVal) {
+          this.dialogNew.source = nVal
+          this.$store.commit('anime-set_path', nVal)
+        }
+      },
+      Items: {
+        get: function () {
+          let anime = this.$store.state.anime.items || []
+          return anime
+        }
+      }
+    },
+    created: () => {
+
     },
     methods: {
-      submit () {
-        this.$store.commit('anime_wait')
-        this.$store.commit('anime_cb', () => {
-          this.$router.push({ name: 'anime-list' })
-        })
-        ipc.send('scan-anime', this.anime)
+      onAdd () {
+        this.dialogNew.show = true
+        this.setPath = ''
       },
-      onBrowse () {
-        this.$store.commit('WAIT')
-        ipc.send('open-anime')
+      onRefresh () {
+        this.$store.commit('anime_reset')
+        this.$router.push({ name: 'anime-new' })
+      },
+      onAddAnime () {
+        this.$store.commit('anime-loadding')
+        // {
+        // //       message: 'Warning, this is a warning message.',
+        // //       type: 'warning'
+        // //     }
+        // vm.$store.commit('anime_cb', (found) => {
+        //   if (!found) {
+        //     vm.$message()
+        //   }
+        // })
+        ipc.send('SERVER_GET_LIST_ANIME', this.setPath)
+      },
+      onAddBrowse () {
+        if (!this.$store.state.anime.loadding) {
+          this.$store.commit('APP-PAUSE')
+          ipc.send('SERVER_GET_FOLDER_ANIME')
+        }
+      },
+      getName (item) {
+        return this.filterAnime(item).title_romaji || (item.anime.length ? `Found ${item.anime.length}` : '')
+      },
+      getEpisodes (item) {
+        let episode = this.filterAnime(item).total_episodes
+        return episode === item.files.length ? episode : `${item.files.length}${episode ? ` (${episode})` : ''}`
+      },
+      filterAnime (item) {
+        let anime = item.anime.filter(a => a.id === item.anilist)[0] || {}
+        return anime || {}
+      },
+      logicAnimeName (name) {
+        return name.replace(/\[.*?\]|\(.*?\)|\{.*?\}|/ig, '').trim().match(/[A-Z0-9]+/ig).join(' ')
+      },
+      logicAnimeCheck (item) {
+        let vm = this
+        if (item.anime.length === 1) {
+          vm.$store.commit('anime_anilist', { index: item.index, id: item.anime[0].id })
+        } else if (item.anime.length > 1) {
+          let getName = vm.logicAnimeName(item.name)
+          item.anime.forEach(list => {
+            if (getName.toLowerCase() === list.title_romaji.toLowerCase()) {
+              vm.$store.commit('anime_anilist', { index: item.index, id: list.id })
+            }
+          })
+        }
+      },
+      onSearchItems () {
+        let all = []
+        let vm = this
+        vm.action.search = true
+        vm.rowItem = { anime: [] }
+        vm.Items.forEach((item, index) => {
+          all.push(() => {
+            let def = Q.defer()
+            if (!item.anilist || !item.anime.length) {
+              vm.$store.commit('anime_prepare_item', index)
+
+              let getName = vm.logicAnimeName(item.name)
+              axios({ method: 'post', url: `/anilist/search/${getName}` }).then(res => {
+                vm.$store.commit('anime_search', { index: index, item: res.data })
+                vm.logicAnimeCheck(item)
+                def.resolve()
+              })
+            } else {
+              def.resolve()
+            }
+            return def.promise
+          })
+        })
+        async.series(all).then(() => {
+          vm.$store.commit('anime_prepare_item')
+          vm.action.search = false
+        }).catch(err => {
+          console.log(err)
+        })
+      },
+      onSaveItems () {
+        let vm = this
+        let all = []
+
+        vm.save = true
+        vm.rowItem = { anime: [] }
+        vm.Items.forEach(item => {
+          if (item.verify && item.anilist && !item.anime_id) {
+            let getAnime = {
+              id: null,
+              index: item.index,
+              path: item.path,
+              anime_id: item.anime.filter(list => { return list.id === item.anilist })[0].id,
+              files: item.files
+            }
+
+            all.push(() => {
+              vm.$store.commit('anime_prepare_item', item.index)
+              return axios({
+                method: 'post',
+                data: getAnime,
+                url: `/anilist/save`,
+                json: true
+              }).then(res => {
+                getAnime.id = !res.data.found ? res.data.id : ''
+                getAnime.title_romaji = res.data.title_romaji
+                getAnime.title_english = res.data.title_english
+                getAnime.image = res.data.image
+
+                vm.$store.commit('anime_save', {
+                  id: !res.data.found ? res.data.id : '',
+                  index: getAnime.index,
+                  duplicate: res.data.found,
+                  name: res.data.title_romaji
+                })
+
+                return getAnime
+              })
+            })
+          }
+        })
+
+        async.series(all).then(anime => {
+          vm.$store.commit('anime_prepare_item')
+          vm.$store.commit('anime_cb', () => {
+            let aWait = false
+            vm.Items.forEach(item => {
+              if (!item.anime_id || item.duplicate) aWait = true
+            })
+            if (!aWait) {
+              vm.$store.commit('anime_reset')
+              vm.$router.push({ name: 'anime-new' })
+            } else {
+              vm.save = false
+            }
+          })
+
+          ipc.send('save-anime', anime)
+          console.log('onSaved done.')
+        }).catch(err => {
+          vm.save = false
+          console.log('onSaved', err)
+        })
+      },
+      onToggle (index) {
+        this.$store.commit('anime_remove_items', index)
+      },
+      onSelectAnime () {
+        this.dialogVisible = true
+      },
+      onGetAnime (val) {
+        if (val) this.$store.commit('anime_anilist', { index: this.rowItem.index, id: val.id })
+        this.dialogVisible = false
+      },
+      onGetItem (row) {
+        if (!this.search && !row.anime_id) this.rowItem = row
+      },
+      onChangeName (val) {
+        if (val) this.$store.commit('anime_folder', { index: this.rowItem.index, name: val })
       }
-    },
-    created () {
-    },
-    destroyed () {
-      // this.$store.commit('setSource', '')
     }
   }
 </script>
+<style>
+  tr.disabled { color: #dfe6ec; }
+  .el-button--small {
+    margin-left: 0px !important;
+    padding: 4px 5px;
+  }
+  .el-button--small > span > i {
+    font-size: 1.2em;
+  }
+  .el-table td > .cell {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
 
-<style scoped>
-  .demo-block {
-    border: 1px solid #eaeefb;
-    border-radius: 4px;
-    transition: .2s;
-  }
-  .demo-block.demo-box > .block {
-    padding: 30px 0;
-  }
-  .demo-block.demo-box:hover {
-    box-shadow: 0 0 8px 0 rgba(232,237,250,.6), 0 2px 4px 0 rgba(232,237,250,.5);
-  }
-  .demo-box {
-    margin-bottom: 24px;
-  }
 </style>

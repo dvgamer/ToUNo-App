@@ -31,11 +31,7 @@
     },
     methods: {
       onSelect (route, keyPath) {
-        if (route === 'anime') {
-          this.$router.push({ name: this.$store.state.anime.saved ? 'anime-list' : 'anime-new' })
-        } else {
-          this.$router.push({ name: route })
-        }
+        this.$router.push({ name: route })
       },
       handleSelect2 () {
 

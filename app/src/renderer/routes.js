@@ -15,14 +15,14 @@ export default [
     component: require('components/AnimePage'),
     children: [
       {
-        path: '/new',
-        name: 'anime-new',
-        component: require('components/AnimeView/NewPage')
-      },
-      {
         path: '/list',
         name: 'anime-list',
         component: require('components/AnimeView/ListPage')
+      },
+      {
+        path: '/new',
+        name: 'anime-new',
+        component: require('components/AnimeView/NewPage')
       },
       {
         path: '/option',

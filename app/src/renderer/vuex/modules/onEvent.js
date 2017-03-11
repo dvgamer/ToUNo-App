@@ -13,7 +13,7 @@ const mutations = {
   LOADED (state) {
     state.alert = true
   },
-  WAIT (state) {
+  'APP-PAUSE' (state) {
     state.wait = !state.wait
   }
 }

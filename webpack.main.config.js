@@ -7,7 +7,6 @@ const pkg = require('./app/package.json')
 const settings = require('./config.js')
 const webpack = require('webpack')
 
-require("font-awesome-webpack");
 
 let mainConfig = {
   entry: {

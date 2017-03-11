@@ -85,20 +85,20 @@ module.exports = function() {
 
   })
 
-  ipc.on('open-anime', function (e) {
+  ipc.on('SERVER_GET_FOLDER_ANIME', function (e) {
     dialog.showOpenDialog({
       properties: ['openDirectory']
     }, function (files) {
-      e.sender.send('selected-anime', files)
+      e.sender.send('CLIENT_GET_FOLDER_ANIME', files)
     })
   })
 
-  ipc.on('scan-anime', function (e, anime) {
+  ipc.on('SERVER_GET_LIST_ANIME', function (e, source) {
 
-    if (fs.existsSync(anime.source)) {
+    if (fs.existsSync(source) && fs.lstatSync(source).isDirectory()) {
       var items = [], totalTime = 0, index = 0;
 
-      let all = fs.readdirSync(anime.source).map(folder_name => {
+      let all = fs.readdirSync(source).map(folder_name => {
         return () => {
           let item = {
             index: index,
@@ -107,9 +107,9 @@ module.exports = function() {
             anilist: 0,
             anime_id: null,
             name: folder_name,
-            path: `${anime.source}\\${folder_name}`,
+            path: `${source}\\${folder_name}`,
             files: [],
-            anime: {}
+            anime: []
           };
 
           let def = Q.defer(), walker = walk.walk(item.path, {});
@@ -162,10 +162,10 @@ module.exports = function() {
 
       async.series(all).then(results => {
         console.log(`Total ${all.length} Tasks Successful (${(totalTime/1000).toFixed(2)}s)`); 
-        e.sender.send('list-anime', { found: items.length > 0, items: items });
+        e.sender.send('CLIENT_GET_LIST_ANIME', { found: items.length > 0, items: items });
       });
     } else {
-      e.sender.send('list-anime', { found: false, items: [] });
+      e.sender.send('CLIENT_GET_LIST_ANIME', { found: false, items: [] });
     }
 
   })

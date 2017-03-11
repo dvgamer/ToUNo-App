@@ -26,7 +26,6 @@
     created () {
       let vm = this
       return axios({ method: 'post', url: '/anilist' }).then(res => {
-        console.log('get', res.data.token)
         if (res.data.token) {
           return localforage.setItem('anilist-token', res.data).then(() => { return res.data })
         } else {
@@ -36,6 +35,7 @@
       }).then(data => {
         console.log('Connecting... [SUCCESS]')
         vm.process = `UPDATE TOKEN...`
+      }).then(data => {
         store.commit('ONLINE', true)
         this.$router.push('dashboard')
       }).catch(err => {
@@ -45,10 +45,6 @@
         this.$router.push('dashboard')
         vm.process = `${typeof err.response === 'object' ? `SERVER DOWN ${err.response.status}` : err}`
       })
-      // setTimeout(() => {
-      //   store.commit('loading')
-      //   this.$router.push('dashboard')
-      // }, 3000)
     }
   }
 </script>
