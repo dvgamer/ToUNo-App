@@ -30,41 +30,49 @@ const attrib = (arg, file) => {
 }
 
 const desktop = anime => {
-  let file = getFile(anime.path)
-  let iniDesktop = {
-    '.ShellClassInfo': {
-      ConfirmFileOp: 0,
-      NoSharing: 1,
-      IconFile: 'ANIME.ico',
-      IconIndex: 0,
-      InfoTip: anime.name
-    },
-    'ViewState': {
-      Mode: 4,
-      Vid: '{137E7700-3573-11CF-AE69-08002B2E1262}',
-      FolderType: 'Videos',
-      Logo: 'ANIME.jpg'
-    },
-    'ToUNo-Anime': {
-      id: anime.id,
-      title_english: anime.title_english,
-      title_romaji: anime.title_romaji,
-      image: anime.image
+  return () => {
+    let file = getFile(anime.path)
+    let iniDesktop = {
+      '.ShellClassInfo': {
+        ConfirmFileOp: 0,
+        NoSharing: 1,
+        IconFile: 'ANIME.ico',
+        IconIndex: 0,
+        InfoTip: anime.name
+      },
+      'ViewState': {
+        Mode: 4,
+        Vid: '{137E7700-3573-11CF-AE69-08002B2E1262}',
+        FolderType: 'Videos',
+        Logo: 'ANIME.jpg'
+      },
+      'ToUNo-Anime': {
+        id: anime.id,
+        title_english: anime.title_english,
+        title_romaji: anime.title_romaji,
+        image: anime.image
+      }
     }
+    return setINI(file.desktop, iniDesktop);
   }
-  return setINI(file.desktop, iniDesktop);
 }
 
 const setINI = (file, content) => {
   let data = new Buffer(ini.stringify(content).replace(/\[\\\./ig, '[.'));
-  if (!fs.existsSync(file)) {
-    fs.writeFileSync(file, data);
-    return attrib('+', file);
-  } else {
-    return attrib('-', file).then(() => {
+
+  try {
+    if (!fs.existsSync(file)) {
       fs.writeFileSync(file, data);
       return attrib('+', file);
-    })
+    } else {
+      return attrib('-', file).then(() => {
+        fs.writeFileSync(file, data);
+        return attrib('+', file);
+      })
+    }
+  } catch (e) {
+    console.log('setINI', file, e)
+    return {}
   }
 } 
 
@@ -74,13 +82,13 @@ const getINI = file => {
 }
 
 module.exports = function() {
-  ipc.on('save-anime', function(e, Items){
+  ipc.on('SERVER_SAVED_ANIME', function(e, Items){
     let all = Items.map(item => desktop(item));
     async.series(all).then(results => {
-      e.sender.send('verify-anime', { success: true })
+      e.sender.send('CLIENT_SAVED_ANIME', { success: true })
     }).catch(err => {
       console.log(err);
-      e.sender.send('verify-anime', { success: false })
+      e.sender.send('CLIENT_SAVED_ANIME', { success: false })
     });
 
   })
@@ -101,7 +109,7 @@ module.exports = function() {
       let all = fs.readdirSync(source).map(folder_name => {
         return () => {
           let item = {
-            index: index,
+            saved: false,
             verify: true,
             prepare: false,
             anilist: 0,
@@ -123,10 +131,9 @@ module.exports = function() {
           }
 
           if (isAnime) {
-            console.log('found anime')
+            // console.log('found anime')
             def.resolve();
           } else {
-            index++;
             walker.on("file", function (root, file, next) {
               let ignore = [ 'Desktop.ini', 'ANIME.jpg', 'ANIME.ico' ]
               if (ignore.indexOf(file.name) == -1) {
@@ -142,17 +149,20 @@ module.exports = function() {
             });
 
 
-            console.log(`Tasks-${item.name} Begin...`);
+            // console.log(`Tasks-${item.name} Begin...`);
             walker.on("errors", function (root, nodeStatsArray, next) {
-              console.log(`error-${root}`); 
+              // console.log(`error-${root}`); 
               next();
             });
 
             walker.on("end", function () {
               let elapsed = Math.floor(Date.now()) - time;
               totalTime += elapsed;
-              items.push(item);
-              console.log(`Tasks-${item.name} Successful (${(elapsed/1000).toFixed(2)}s`); 
+              if (item.files.length > 0) {
+                index++;
+                items.push(item);
+              }
+              // console.log(`Tasks-${item.name} Successful (${(elapsed/1000).toFixed(2)}s`); 
               def.resolve();
             });
           }
@@ -161,7 +171,7 @@ module.exports = function() {
       })
 
       async.series(all).then(results => {
-        console.log(`Total ${all.length} Tasks Successful (${(totalTime/1000).toFixed(2)}s)`); 
+        // console.log(`Total ${all.length} Tasks Successful (${(totalTime/1000).toFixed(2)}s)`); 
         e.sender.send('CLIENT_GET_LIST_ANIME', { found: items.length > 0, items: items });
       });
     } else {
