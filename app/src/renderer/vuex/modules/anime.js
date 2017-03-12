@@ -66,6 +66,7 @@ const mutations = {
   'anime-save' (state, data) {
     state.items[data.index].folder_name = data.name
     state.items[data.index].duplicate = data.duplicate
+    state.items[data.index].saved = !data.duplicate
     state.items[data.index].id = data.id
   }
   // anime_wait (state) {

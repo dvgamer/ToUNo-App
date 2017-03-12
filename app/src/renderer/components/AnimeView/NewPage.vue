@@ -62,7 +62,7 @@
           <el-table-column
             label="Name">
             <template scope="scope">
-              <div v-if="scope.$index === Items.indexOf(rowItem) && !getAnime && !action.save && scope.row.verify" style="height:41px;margin-top: 6px;">
+              <div v-if="getIndex(scope.row) === getIndex(rowItem) && !getAnime && !action.save && scope.row.verify" style="height:41px;margin-top: 6px;">
                 <el-input
                   placeholder="Search name anime"
                   @change="onChangeName"
@@ -84,7 +84,7 @@
                 <el-button
                   size="small"
                   :type="!scope.row.verify?'':'danger'"
-                  @click="onToggle(scope.$index)">
+                  @click="onToggle(scope.row)">
                   <i class="fa" :class="!scope.row.verify?'fa-undo':'fa-ban'" aria-hidden="true"></i>
                 </el-button>
                 <el-button
@@ -233,7 +233,16 @@
       Items: {
         get: function () {
           let anime = this.$store.state.anime.items || []
-          return anime.filter((item, index) => index < 20)
+          let INDEX = 0
+          let LIMIT = 20
+          return anime.filter((item) => {
+            let check = false
+            if (INDEX < LIMIT && !item.saved) {
+              INDEX++
+              check = true
+            }
+            return check
+          })
         }
       }
     },
@@ -241,6 +250,9 @@
 
     },
     methods: {
+      getIndex (item) {
+        return (this.$store.state.anime.items || []).indexOf(item)
+      },
       onAdd () {
         this.anime_dialog_new = true
         this.setPath = ''
@@ -285,22 +297,27 @@
       logicAnimeCheck (item) {
         let vm = this
         if (item.anime.length === 1) {
-          vm.$store.commit('anime-set_anilist', { index: vm.Items.indexOf(item), id: item.anime[0].id })
+          vm.$store.commit('anime-set_anilist', { index: vm.getIndex(item), id: item.anime[0].id })
         } else if (item.anime.length > 1) {
           let getName = vm.logicAnimeName(item.name)
           item.anime.forEach(list => {
             if (getName.toLowerCase() === list.title_romaji.toLowerCase()) {
-              vm.$store.commit('anime-set_anilist', { index: vm.Items.indexOf(item), id: list.id })
+              vm.$store.commit('anime-set_anilist', { index: vm.getIndex(item), id: list.id })
             }
           })
         }
+      },
+      onItems (value, row) {
+        console.log(value, row)
+        return false
       },
       onSearchItems () {
         let all = []
         let vm = this
         vm.action.search = true
         vm.rowItem = { anime: [] }
-        vm.Items.forEach((item, index) => {
+        vm.Items.forEach((item) => {
+          let index = vm.getIndex(item)
           all.push(() => {
             let def = Q.defer()
             if (item.verify) {
@@ -332,16 +349,17 @@
 
         vm.save = true
         vm.rowItem = { anime: [] }
-        vm.Items.forEach((item, index) => {
+        vm.Items.forEach((item) => {
           if (item.verify && item.anilist) {
+            let index = vm.getIndex(item)
             let getAnime = {
               id: null,
-              anilist: item.anilist,
+              anilist_id: item.anilist,
               path: item.path,
               files: item.files
             }
-
             all.push(() => {
+              console.log('setAnime', getAnime)
               vm.$store.commit('anime-prepare', index)
               return axios({
                 method: 'post',
@@ -349,19 +367,20 @@
                 url: `/anilist/save`,
                 json: true
               }).then(res => {
-                getAnime.id = !res.data.found ? res.data.id : ''
-                getAnime.title_romaji = res.data.title_romaji
-                getAnime.title_english = res.data.title_english
-                getAnime.image = res.data.image
+                if (!res.data.error) {
+                  getAnime = res.data
+                  getAnime.id = !res.data.found ? res.data.id : ''
 
-                vm.$store.commit('anime-save', {
-                  id: !res.data.found ? res.data.id : '',
-                  index: index,
-                  duplicate: res.data.found,
-                  name: res.data.title_romaji
-                })
-
-                return getAnime
+                  vm.$store.commit('anime-save', {
+                    id: getAnime.id,
+                    index: index,
+                    duplicate: res.data.found,
+                    name: getAnime.romaji
+                  })
+                  return getAnime
+                } else {
+                  throw new Error('Server Save anime error: ' + res.data.error)
+                }
               })
             })
           }
@@ -384,21 +403,21 @@
           console.log('onSaved', err)
         })
       },
-      onToggle (index) {
-        this.$store.commit('anime-set_verify', index)
+      onToggle (item) {
+        this.$store.commit('anime-set_verify', this.getIndex(item))
       },
       onSelectAnime () {
         this.dialogVisible = true
       },
       onGetAnime (val) {
-        if (val) this.$store.commit('anime-set_anilist', { index: this.Items.indexOf(this.rowItem), id: val.id })
+        if (val) this.$store.commit('anime-set_anilist', { index: this.getIndex(this.rowItem), id: val.id })
         this.dialogVisible = false
       },
       onGetItem (row) {
         if (!this.search && !row.id) this.rowItem = row
       },
       onChangeName (val) {
-        if (val) this.$store.commit('anime-folder_name', { index: this.Items.indexOf(this.rowItem), name: val })
+        if (val) this.$store.commit('anime-folder_name', { index: this.getIndex(this.rowItem), name: val })
       }
     }
   }

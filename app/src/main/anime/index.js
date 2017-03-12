@@ -29,16 +29,19 @@ const attrib = (arg, file) => {
   return exec('C:/Windows/System32/attrib.exe', [ `${arg}s`, `${arg}h`, file ]);
 }
 
-const desktop = anime => {
+const desktop = item => {
   return () => {
-    let file = getFile(anime.path)
+    let file = getFile(item.path)
+
+    item.anime.sound = item.anime.sound.join(',')
+    item.anime.subtitle = item.anime.subtitle.join(',')
     let iniDesktop = {
       '.ShellClassInfo': {
         ConfirmFileOp: 0,
         NoSharing: 1,
         IconFile: 'ANIME.ico',
         IconIndex: 0,
-        InfoTip: anime.name
+        InfoTip: item.folder_name
       },
       'ViewState': {
         Mode: 4,
@@ -46,12 +49,14 @@ const desktop = anime => {
         FolderType: 'Videos',
         Logo: 'ANIME.jpg'
       },
-      'ToUNo-Anime': {
-        id: anime.id,
-        title_english: anime.title_english,
-        title_romaji: anime.title_romaji,
-        image: anime.image
-      }
+      'App-ToUNo': {
+        id: item.id,
+        english: item.english,
+        romaji: item.romaji,
+        status: item.status,
+        image: item.image
+      },
+      'Anime': item.anime
     }
     return setINI(file.desktop, iniDesktop);
   }
@@ -127,7 +132,7 @@ module.exports = function() {
 
           if (fs.existsSync(file.desktop)) {
             let config = getINI(file.desktop)
-            if(config['ToUNo-Anime'].id) isAnime = true;
+            if(config['App-ToUNo'].id) isAnime = true;
           }
 
           if (isAnime) {
