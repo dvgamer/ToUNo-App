@@ -1,26 +1,28 @@
 <template>
-  <div id="app" v-loading.body="$store.getters.onWait">
+  <div id="app"> 
     <div class="header">
-      <el-col v-if="$store.getters.onLoaded">
-        <el-menu class="nav-top" theme="dark" default-active="dashboard" mode="horizontal" @select="onSelect">
-          <el-menu-item index="dashboard">DASHBOARD</el-menu-item>
-          <el-menu-item index="anime">ANIME</el-menu-item>
-          <el-submenu index="option">
-            <template slot="title"><i class="el-icon-setting"></i>SETTING</template>
-            <el-menu-item index="2-1">item one</el-menu-item>
-            <el-menu-item index="2-2">item two</el-menu-item>
-            <el-menu-item index="2-3">item three</el-menu-item>
-          </el-submenu>
-          <el-menu-item v-if="!$store.getters.offline" class="btn-sign" index="sign" >SIGN IN</el-menu-item>
-        </el-menu>
-      </el-col>
+      <nav class="navbar navbar-default navbar-fixed-top" v-if="$store.getters.onLoaded">
+        <div class="container-fluid">
+          <ul class="nav navbar-nav">
+            <li :class="{ 'active': $route.name == 'dashboard' }"><a href="#dashboard">DASHBOARD</a></li>
+            <li :class="{ 'active': $route.name == 'anime' }"><a href="#anime">ANIME</a></li>
+            <li :class="{ 'active': $route.name == 'setting' }"><a href="#setting">SETTING</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li :class="{ 'active': $route.name == 'sign' }" v-if="!$store.getters.offline"><a href="#sign"><i class="fa fa-sign-in" aria-hidden="true"></i> SIGN IN</a></li>
+          </ul>
+        </div>
+      </nav>
     </div>
-    <router-view class="container"></router-view>
+    <div class="container">
+      <router-view class="container"></router-view>
+    </div>
     <div class="footer"></div>
   </div>
 </template>
 
 <script>
+  // v-loading.body="$store.getters.onWait"
   import store from 'renderer/vuex/store'
   export default {
     store,
@@ -60,19 +62,9 @@
     height: 100%;
     overflow: hidden; 
   }
-  .nav-top, .el-alert.offline {
-    border-radius: 0px;
-    z-index: 1;
-  }
+
   .header {
     height: 60px;
-  }
-  .container {
-    background-color: #FFF;
-    height: calc(100% - 5px);
-  }
-  .panel-main.el-col {
-    padding: 25px;
   }
   .footer {
     position: absolute;
@@ -83,17 +75,6 @@
     font-size: 11px;
     font-weight: bold;
     color: #585858;
-  }
-  .el-menu-item > a {
-    text-decoration: none;
-  }
-  .el-menu-item.btn-sign {
-    float: right;
-    font-size: 1.2rem;
-    font-weight: bold;
-  }
-  .el-menu-item.btn-sign:hover {
-    border-bottom: 5px solid #FF4949;
   }
 
 </style>
