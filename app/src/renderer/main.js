@@ -2,18 +2,17 @@ import Vue from 'vue'
 import Electron from 'vue-electron'
 import Resource from 'vue-resource'
 import Router from 'vue-router'
-import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-default/index.css'
 import 'font-awesome/css/font-awesome.css'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap/dist/js/bootstrap.js'
 
 import App from './App'
 import routes from './routes'
 
-Vue.use(ElementUI)
 Vue.use(Electron)
 Vue.use(Resource)
 Vue.use(Router)
-// Vue.use(Bootstrap)
+
 Vue.config.debug = true
 
 const router = new Router({
