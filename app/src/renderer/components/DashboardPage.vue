@@ -1,10 +1,10 @@
 <template>
-  <el-row>
-    <el-col :span="24" class="panel-main">
+  <div class="row">
+    <div class="col-md-16 panel-main">
       <img src="./assets/logo.png" alt="electron-vue">
       <h1>Welcome.</h1>
-    </el-col>
-  </el-row>
+    </div>
+  </div class="row">
 </template>
 
 <script>
