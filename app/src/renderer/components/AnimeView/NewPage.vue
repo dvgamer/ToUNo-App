@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <el-row style="margin-bottom:10px;">
+  <div class="row">
+<!--     <el-row style="margin-bottom:10px;">
       <el-col :span="12" >
         <el-button v-if="!$store.getters.offline" :disabled="action.save" type="info" icon="search" :loading="action.search" @click="onSearchItems">Search Anime</el-button>
         <el-button :disabled="action.search" type="warning" icon="upload" :loading="action.save" @click="onSaveItems">Save Anime</el-button>
@@ -160,7 +160,7 @@
           </el-form>
         </el-dialog>
       </el-col>
-    </el-row>
+    </el-row> -->
   </div>
 </template>
 
@@ -247,7 +247,7 @@
       }
     },
     created: () => {
-
+      console.log('NewPage')
     },
     methods: {
       getIndex (item) {

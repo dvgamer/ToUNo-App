@@ -1,12 +1,11 @@
-"use strict";
+'use strict'
 
-var walk = require('walk')
-  , walker
-  ;
+var walk = require('walk'),
+  walker
 
-walker = walk.walk("F:\\Anime Store-Uncheck4", {});
+walker = walk.walk('F:\\Anime Store-Uncheck4', {})
 
-walker.on("file", function (root, file, next) {
+walker.on('file', function (root, file, next) {
   // fs.readFile(file.name, function () {
     // doStuff \
 	  let item = {
@@ -15,15 +14,15 @@ walker.on("file", function (root, file, next) {
 	  	size: file.size,
 	  	ctime: file.ctime
 	  }
-    console.log(`${root}\\${file.name}`)
-    next();
+  console.log(`${root}\\${file.name}`)
+  next()
   // });
-});
+})
 
-walker.on("errors", function (root, nodeStatsArray, next) {
-  next();
-});
+walker.on('errors', function (root, nodeStatsArray, next) {
+  next()
+})
 
-walker.on("end", function () {
-  console.log("all done");
-});
+walker.on('end', function () {
+  console.log('all done')
+})

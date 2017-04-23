@@ -11,6 +11,10 @@ import 'bootstrap/dist/js/bootstrap.js'
 import App from './App'
 import routes from './routes'
 
+import vModel from './modules/model.vue'
+
+Vue.component('v-model', vModel)
+
 Vue.use(Electron)
 Vue.use(Electron)
 Vue.use(Resource)

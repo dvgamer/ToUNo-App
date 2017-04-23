@@ -14,10 +14,10 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    width: 950,
-    minWidth: 950,
+    width: 992,
+    minWidth: 900,
     minHeight: 600,
-    height: 600,
+    height: 640,
     title: app.getName()
   })
 
@@ -27,7 +27,6 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
-
 
   // eslint-disable-next-line no-console
   console.log('mainWindow opened')

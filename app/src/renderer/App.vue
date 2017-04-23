@@ -5,7 +5,7 @@
         <div class="container-fluid">
           <ul class="nav navbar-nav">
             <li :class="{ 'active': $route.name == 'dashboard' }"><a href="#dashboard">DASHBOARD</a></li>
-            <li :class="{ 'active': $route.name == 'anime' }"><a href="#anime">ANIME</a></li>
+            <li :class="{ 'active': $route.name == 'anime-list' }"><a href="#list">ANIME</a></li>
             <li :class="{ 'active': $route.name == 'setting' }"><a href="#setting">SETTING</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -14,9 +14,7 @@
         </div>
       </nav>
     </div>
-    <div class="container">
-      <router-view class="container"></router-view>
-    </div>
+    <router-view></router-view>
     <div class="footer"></div>
   </div>
 </template>

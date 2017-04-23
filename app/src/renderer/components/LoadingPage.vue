@@ -1,7 +1,11 @@
 <template>
-  <div class="panel-center">
-    <img src="./assets/logo.png" alt="electron-vue">
-    <h1 v-text="process"></h1>
+  <div>
+    <img class="bg01" src="./assets/bg-01.png">
+    <img class="bg02" src="./assets/bg-02.png">
+    <div class="panel-center">
+      <img class="logo" src="./assets/kem-store.png">
+      <div class="preload-text">{{process}}</div>
+    </div>
   </div>
 </template>
 <script>
@@ -24,6 +28,7 @@
       }
     },
     created () {
+      console.log('Loading')
       let vm = this
       return axios({ method: 'post', url: '/anilist' }).then(res => {
         if (res.data.token) {
@@ -58,7 +63,26 @@
     top: calc(50% - 80px);
     left: calc(50% - 250px);
   }
-  img {
+  img.logo {
     width: 450px;
+  }
+  img.bg01, img.bg02 {
+    position: absolute;
+  }
+  img.bg01 {
+  bottom: 0px;
+  left: 40px;
+  }
+  img.bg02 {
+    width: 560px;
+    top:0px;
+    right: 0px;
+  }
+  .preload-text {
+    font-size: 1.8rem;
+    font-family: "Segoe UI";
+    font-weight: bold;
+    margin-top: 23px;
+    color: #24688a;
   }
 </style>
