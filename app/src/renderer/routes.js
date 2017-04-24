@@ -32,6 +32,11 @@ export default [
     ]
   },
   {
+    path: '/setting',
+    name: 'setting',
+    component: require('components/SettingPage')
+  },
+  {
     path: '*',
     redirect: '/'
   }

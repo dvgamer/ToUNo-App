@@ -4,9 +4,9 @@
       <nav class="navbar navbar-default navbar-fixed-top" v-if="$store.getters.onLoaded">
         <div class="container-fluid">
           <ul class="nav navbar-nav">
-            <li :class="{ 'active': $route.name == 'dashboard' }"><a href="#dashboard">DASHBOARD</a></li>
-            <li :class="{ 'active': $route.name == 'anime-list' }"><a href="#list">ANIME</a></li>
-            <li :class="{ 'active': $route.name == 'setting' }"><a href="#setting">SETTING</a></li>
+            <li :class="{ 'active': $route.name == 'dashboard' }"><a href="#dashboard"><i class="fa fa-home" aria-hidden="true"></i> <span>DASHBOARD</span></a></li>
+            <li :class="{ 'active': $route.name == 'anime-list' }"><a href="#list"><i class="fa fa-list" aria-hidden="true"></i> <span>ANIME</span></a></li>
+            <li :class="{ 'active': $route.name == 'setting' }"><a href="#setting"><i class="fa fa-cogs" aria-hidden="true"></i> <span>SETTING</span></a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li :class="{ 'active': $route.name == 'sign' }" v-if="!$store.getters.offline"><a href="#sign"><i class="fa fa-sign-in" aria-hidden="true"></i> SIGN IN</a></li>
@@ -60,7 +60,21 @@
     height: 100%;
     overflow: hidden; 
   }
+  
+  i.fa-home {
+    font-size: 1.8rem;
+  }
+  i.fa-list {
+    font-size: 1.4rem;
+    margin-top: 3px;
+  }
+  i.fa-cogs {
+    font-size: 1.6rem;
+  }
 
+  .nav li a span {
+    margin-left: 3px;
+  }
   .header {
     height: 60px;
   }
