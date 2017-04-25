@@ -14,13 +14,12 @@ import routes from './routes'
 import vModel from './modules/model.vue'
 
 Vue.component('v-model', vModel)
-
 Vue.use(Electron)
 Vue.use(Electron)
 Vue.use(Resource)
 Vue.use(Router)
 
-Vue.config.debug = true
+Vue.config.debug = false
 
 const router = new Router({
   scrollBehavior: () => ({ y: 0 }),

@@ -1,7 +1,6 @@
 import { ipcMain as ipc, dialog } from 'electron'
 import { spawn } from 'child_process'
 import fs from 'fs'
-import path from 'path'
 import ini from 'ini'
 import walk from 'walk'
 import async from 'async-q'
@@ -15,11 +14,14 @@ let getFile = folder => {
 }
 
 const exec = (cmd, arg) => {
-  let def = Q.defer(), error = false
+  let def = Q.defer()
+  let error = false
   const ls = spawn(cmd, arg)
-  ls.stderr.on('data', data => error = true)
+  ls.stderr.on('data', data => {
+    error = true
+  })
   ls.on('close', (code) => {
-    if (code == 0 && !error) { def.resolve(true) } else { def.reject(false) }
+    if (code === 0 && !error) { def.resolve(true) } else { def.reject(false) }
   })
   return def.promise
 }
@@ -106,9 +108,11 @@ module.exports = function () {
 
   ipc.on('SERVER_GET_LIST_ANIME', function (e, source) {
     if (fs.existsSync(source) && fs.lstatSync(source).isDirectory()) {
-      var items = [], totalTime = 0, index = 0
+      let items = []
+      let totalTime = 0
+      // let index = 0
 
-      let all = fs.readdirSync(source).map(folder_name => {
+      let all = fs.readdirSync(source).map(name => {
         return () => {
           let item = {
             saved: false,
@@ -116,14 +120,16 @@ module.exports = function () {
             prepare: false,
             anilist: 0,
             anime_id: null,
-            name: folder_name,
-            path: `${source}\\${folder_name}`,
+            name: name,
+            path: `${source}\\${name}`,
             files: [],
             anime: []
           }
 
-          let def = Q.defer(), walker = walk.walk(item.path, {})
-          let time = Math.floor(Date.now()), isAnime = false
+          let def = Q.defer()
+          let walker = walk.walk(item.path, {})
+          let time = Math.floor(Date.now())
+          let isAnime = false
           let file = getFile(item.path)
 
           if (fs.existsSync(file.desktop)) {
@@ -137,7 +143,7 @@ module.exports = function () {
           } else {
             walker.on('file', function (root, file, next) {
               let ignore = [ 'Desktop.ini', 'ANIME.jpg', 'ANIME.ico' ]
-              if (ignore.indexOf(file.name) == -1) {
+              if (ignore.indexOf(file.name) === -1) {
                 let list = {
                   uid: file.uid,
                   name: file.name,
@@ -159,7 +165,7 @@ module.exports = function () {
               let elapsed = Math.floor(Date.now()) - time
               totalTime += elapsed
               if (item.files.length > 0) {
-                index++
+                // index++
                 items.push(item)
               }
               // console.log(`Tasks-${item.name} Successful (${(elapsed/1000).toFixed(2)}s`);
@@ -171,7 +177,7 @@ module.exports = function () {
       })
 
       async.series(all).then(results => {
-        // console.log(`Total ${all.length} Tasks Successful (${(totalTime/1000).toFixed(2)}s)`);
+        console.log(`Total ${all.length} Tasks Successful (${(totalTime / 1000).toFixed(2)}s)`)
         e.sender.send('CLIENT_GET_LIST_ANIME', { found: items.length > 0, items: items })
       })
     } else {

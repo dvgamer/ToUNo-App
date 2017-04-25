@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, ipcMain as ipc, dialog } from 'electron'
+import { app, BrowserWindow } from 'electron'
 
 require('./anime')()
 

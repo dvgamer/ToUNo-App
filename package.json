@@ -1,6 +1,6 @@
 {
-  "name": "my-project",
-  "version": "0.0.0",
+  "name": "touno-app",
+  "version": "1.0.0",
   "description": "An electron-vue project",
   "scripts": {
     "build": "npm run pack && build",
@@ -10,15 +10,15 @@
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter app test",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix app test",
     "pack": "npm run pack:main && npm run pack:renderer",
-    "pack:main": "cross-env NODE_ENV=production webpack -p --progress --colors --config webpack.main.config.js",
-    "pack:renderer": "cross-env NODE_ENV=production webpack -p --progress --colors --config webpack.renderer.config.js",
+    "pack:main": "cross-env NODE_ENV=production webpack -p --display-error-details --progress --colors --config webpack.main.config.js",
+    "pack:renderer": "cross-env NODE_ENV=production webpack -p --display-error-details --progress --colors --config webpack.renderer.config.js",
     "test": "npm run unit && npm run e2e",
     "unit": "cross-env BABEL_ENV=testing-unit karma start test/unit/karma.conf.js",
-    "postinstall": "npm run lint:fix && cd app && npm install"
+    "postinstall": "npm run lint:fix && cd app && npm install && cd .."
   },
   "build": {
-    "productName": "ElectronVue",
-    "appId": "org.simulatedgreg.electron-vue",
+    "productName": "ToUNo",
+    "appId": "org.simulatedgreg.touno-app",
     "category": "public.app-category.tools",
     "dmg": {
       "contents": [
@@ -121,7 +121,7 @@
     "jquery": "^3.2.1",
     "less": "^2.7.2",
     "node-ini": "^1.0.0",
-    "q": "^1.4.1",
+    "q": "^1.5.0",
     "sass-loader": "^6.0.1",
     "walk": "^2.3.9"
   }
