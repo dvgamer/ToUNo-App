@@ -18,6 +18,7 @@ function createWindow () {
     minWidth: 900,
     minHeight: 600,
     height: 640,
+    'node-integration': false,
     title: app.getName()
   })
 
