@@ -33,18 +33,20 @@
         </form>
       </v-model>
       <div class="btn-group pull-right" role="group" style="margin-left:15px;">
-        <button type="button" :disabled="!anime_view" @click="modeAdd" class="btn btn-info">
+        <button type="button" @click="modeAdd" class="btn" :class="!anime_view ? 'btn-info':''">
           <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
         </button>
-        <button type="button" :disabled="anime_view" @click="modeView" class="btn btn-info">
+        <button type="button" @click="modeView" class="btn" :class="anime_view ? 'btn-info':''">
           <i class="fa fa-list" aria-hidden="true"></i>
         </button>
       </div>
       <div class="btn-group pull-right" role="group">
-        <button :disabled="EventSave || EventSearch" type="button" class="btn" @click="dialogOpen">
+        <button :disabled="EventSave || EventSearch" type="button" class="btn btn-primary" @click="dialogOpen">
           <i class="fa fa-plus-circle" aria-hidden="true"></i>
         </button>
-        <button :disabled="EventSave || EventSearch" type="button" class="btn" @click="onRefresh">
+        <button type="button" 
+          :disabled="EventSave || EventSearch || $store.state.anime.source.length == 0" 
+          :class="['btn', $store.state.anime.source.length > 0 ? 'btn-primary' : '' ]" @click="onRefresh">
           <i class="fa fa-refresh" aria-hidden="true"></i>
         </button>
       </div>
@@ -57,9 +59,9 @@
 <script>
   import { ipcRenderer as ipc } from 'electron'
   import store from 'renderer/vuex/store'
-  import localforage from 'localforage'
 
   ipc.on('CLIENT_GET_FOLDER_ANIME', (e, path) => {
+    console.log('CLIENT_GET_FOLDER_ANIME')
     store.commit('anime-loadding')
     if (path && path[0]) {
       store.commit('anime-set_path', path[0])
@@ -67,6 +69,7 @@
   })
 
   ipc.on('CLIENT_GET_LIST_ANIME', (e, data) => {
+    console.log('CLIENT_GET_LIST_ANIME')
     if (data.found) {
       store.commit('anime-new_dialog', false)
       store.commit('anime-mode-view', false)
@@ -102,20 +105,24 @@
       onBrowse () {
         this.$store.commit('anime-loadding')
         ipc.send('SERVER_GET_FOLDER_ANIME')
+        console.log('SERVER_GET_FOLDER_ANIME')
       },
       onAddAnime () {
         this.$store.commit('anime-loadding')
+        this.$router.push({ name: 'anime-new' })
         ipc.send('SERVER_GET_LIST_ANIME', this.setPath)
+        console.log('SERVER_GET_LIST_ANIME')
       },
       modeAdd () {
         this.$store.commit('anime-mode-view', false)
-        this.$router.push('new')
+        this.$router.push({ name: 'anime-new' })
       },
       modeView () {
         this.$store.commit('anime-mode-view', true)
-        this.$router.push('list')
+        this.$router.push({ name: 'anime-list' })
       },
       dialogOpen () {
+        this.setPath = ''
         if (this.wait) this.$store.commit('anime-loadding')
         this.anime_dialog_new = true
       },
@@ -123,7 +130,7 @@
         this.anime_dialog_new = false
       },
       onRefresh () {
-        this.anime_dialog_new = false
+        console.log('onRefresh', this.$store.state.anime.source.length)
       }
     },
     computed: {
@@ -174,9 +181,7 @@
       }
     },
     created () {
-      localforage.getItem('key').then(value => {
-        console.log(value)
-      })
+
     }
   }
 </script>
@@ -199,11 +204,8 @@
     float:left;
   }
   .row > .main {
-    height: calc(100% - 90px);
     padding: 15px;
     width: 100%;
-    float:left;
-    overflow-y: scroll;
   }
   .panel {
     border-right: none;
@@ -219,10 +221,7 @@
     font-size: 1.35rem;
   }
   .btn[disabled] {
-    background-color: #cecece;
-    background-image: none;
-    color: #636363;
-    border-color: #636363;
     cursor: default;
+    color: inherit;
   }
 </style>

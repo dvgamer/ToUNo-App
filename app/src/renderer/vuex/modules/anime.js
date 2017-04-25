@@ -32,7 +32,7 @@ const mutations = {
   },
   'anime-set_path' (state, path) {
     state.path = path
-    if (!path && path !== '') {
+    if (path !== '' && state.source.indexOf(path) < 0) {
       state.source.push(path)
     }
   },

@@ -4,14 +4,14 @@
       <nav class="navbar navbar-default navbar-fixed-top" v-if="$store.getters.onLoaded">
         <div class="container-fluid">
           <ul class="nav navbar-nav">
-            <router-link :to="{ name: 'dashboard' }" tag="li" active-class="active" exact-active-class="active">
-              <a href="#"><i class="fa fa-home" aria-hidden="true"></i> <span>DASHBOARD</span></a>
+            <router-link :to="{ name: 'dashboard' }" tag="li" active-class="active">
+              <a><i class="fa fa-home" aria-hidden="true"></i> <span>DASHBOARD</span></a>
             </router-link>
-            <router-link :to="{ name: 'anime' }" tag="li" active-class="active" exact-active-class="active">
-              <a href="#"><i class="fa fa-list" aria-hidden="true"></i> <span>ANIME</span></a>
+            <router-link :to="{ name: 'anime-list' }" tag="li" active-class="active" exact>
+              <a><i class="fa fa-list" aria-hidden="true"></i> <span>ANIME</span></a>
             </router-link>
-            <router-link :to="{ name: 'setting' }" tag="li" active-class="active" exact-active-class="active">
-              <a href="#"><i class="fa fa-cogs" ar ia-hidden="true"></i> <span>SETTING</span></a>
+            <router-link :to="{ name: 'setting' }" tag="li" active-class="active">
+              <a><i class="fa fa-cogs" ar ia-hidden="true"></i> <span>SETTING</span></a>
             </router-link>
           </ul>
           <ul class="nav navbar-nav navbar-right">

@@ -1,58 +1,78 @@
 <template>
-  <table class="table table-striped table-hover">
+<div>
+  <table class="table" style="margin-bottom: 0px;">
+    <colgroup>
+      <col style="width:5%"/>
+      <col style="width:10%"/>
+      <col style="width:55%"/>
+      <col style="width:15%"/>
+    </colgroup>
     <thead>
       <tr>
-        <th style="width:5%" class="text-center">#</th>
-        <th style="width:10%" class="text-center">Episodes</th>
-        <th style="width:40%">Folder Name</th>
-        <th style="width:30%" class="text-center">Action</th>
+        <th class="text-center">#</th>
+        <th class="text-center">Episodes</th>
+        <th>Folder Name</th>
+        <th class="text-center">Action</th>
       </tr>
     </thead>
-    <tbody>
-      <tr v-for="anime in Items" @click="onGetItem(anime)" :class="{ 'disabled' : !!anime.id }">
-        <td class="text-center" style="padding-top:12px;">
-          <div v-if="!anime.id">
-            <i
-              v-if="!anime.prepare"
-              :style="{ color: anime.duplicate ? '#F7BA2A' : anime.anilist && anime.verify ? '#13CE66':'#e2e2e2', 'font-size': '2.1rem' }" 
-              :class="['fa', anime.duplicate ? 'fa-info-circle' : anime.anilist && anime.verify? 'fa-check-circle-o':'fa-times-circle-o']">
-            </i>
-            <i v-else style="color: #F7BA2A" name="loading"></i>
-          </div>
-          <span v-else>{{getIndex(anime)}}</span>
-        </td>
-        <td class="text-center" style="padding-top:15px;">{{getEpisodes(anime)}}</td>
-        <td>
-          <div v-if="getIndex(anime) === getIndex(rowItem) && !getAnime && !EventSave && anime.verify" style="height:30px">
-            <input
-              type="text"
-              class="form-control input-sm"
-              placeholder="Search name anime"
-              @change="onChangeName"
-              :value="anime.name" />
-          </div>
-          <div v-else style="height:30px">
-            <input
-              type="text" readonly
-              class="form-control form-invisible input-sm" 
-              :value="anime.name" />
-            <div style="font-size:0.8rem"><b>{{getName(anime)}}</b></div>
-          </div>
-        </td>
-        <td class="text-center" style="padding-top:15px;">
-          action
-        </td>
-      </tr>
-      <tr v-if="Items.length == 0" class="transection">
-        <td colspan="6">No Transection</td>
-      </tr>
-    </tbody>
+  </table>
+  <div class="table-limit">
+    <table class="table table-striped table-hover" style="margin: -1px 0;">
+      <colgroup>
+        <col style="width:5%"/>
+        <col style="width:10%"/>
+        <col style="width:55%"/>
+        <col style="width:15%"/>
+      </colgroup>
+      <tbody>
+        <tr v-for="anime in Items" @click="onGetItem(anime)" :class="{ 'disabled' : !!anime.id }">
+          <td class="text-center" style="padding-top:12px;">
+            <div v-if="!anime.id">
+              <i
+                v-if="!anime.prepare"
+                :style="{ color: anime.duplicate ? '#F7BA2A' : anime.anilist && anime.verify ? '#13CE66':'#e2e2e2', 'font-size': '2.1rem' }" 
+                :class="['fa', anime.duplicate ? 'fa-info-circle' : anime.anilist && anime.verify? 'fa-check-circle-o':'fa-times-circle-o']">
+              </i>
+              <i v-else style="color: #F7BA2A" name="loading"></i>
+            </div>
+            <span v-else>{{getIndex(anime)}}</span>
+          </td>
+          <td class="text-center" style="padding-top:15px;">{{getEpisodes(anime)}}</td>
+          <td>
+            <div v-if="getIndex(anime) === getIndex(rowItem) && !getAnime && !EventSave && anime.verify" style="height:30px">
+              <input
+                type="text"
+                class="form-control input-sm"
+                placeholder="Search name anime"
+                @change="onChangeName"
+                :value="anime.name" />
+            </div>
+            <div v-else style="height:30px">
+              <input
+                type="text" readonly
+                class="form-control form-invisible input-sm" 
+                :value="anime.name" />
+              <div style="font-size:0.8rem"><b>{{getName(anime)}}</b></div>
+            </div>
+          </td>
+          <td class="text-center" style="padding-top:15px;">
+            action
+          </td>
+        </tr>
+        <tr v-if="Items.length == 0" class="transection">
+          <td colspan="6"><span>No Transection</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <table class="table" style="margin-top: 0px;">
     <tfoot>
       <tr>
-        <td colspan="6">Total anime {{$store.state.anime.items.length}} items.</td>
+        <td>Total anime {{$store.state.anime.items.length}} items.</td>
       </tr>
     </tfoot>
   </table>
+</div>
 </template>
 
 <script>
@@ -227,7 +247,7 @@
         get: function () {
           let anime = this.$store.state.anime.items || []
           let INDEX = 0
-          let LIMIT = 50
+          let LIMIT = 20
           return anime.filter((item) => {
             let check = false
             if (INDEX < LIMIT && !item.saved) {
@@ -263,7 +283,7 @@
   }
 </script>
 
-<style>
+<style scope>
 .table > tbody td {
   font-size: 12px;
 }
@@ -280,13 +300,23 @@
   outline: none;
   box-shadow: none;
 }
-.table-hover > tbody > tr.transection:hover {
-    background-color: #FFF;
+.table-limit {
+  height: calc(100vh - 182px);
+  overflow-y: scroll;
+  overflow-x: none;
+}
+.table > tbody {
+  height: 400px;
+}
+.table > tbody > tr.transection, .table > tbody > tr.transection:hover {
+    background-color: #f9f9f9 !important;
 } 
-.table-hover > tbody > tr.transection td {
+.table > tbody > tr.transection td {
   text-align: center;
   font-size: 17px;
   color: #CCC;
   padding: 10px 0px;
+  height: calc(100vh - 181px);
+  vertical-align: middle;
 } 
 </style>
