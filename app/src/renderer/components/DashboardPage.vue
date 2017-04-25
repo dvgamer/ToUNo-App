@@ -30,7 +30,6 @@
     methods: {
     },
     created () {
-      console.log('Dashboard')
       if (this.$store.getters.offline && !this.$store.getters.alert) {
         this.$store.commit('LOADED')
         this.$message({

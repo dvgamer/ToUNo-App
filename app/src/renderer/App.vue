@@ -4,9 +4,15 @@
       <nav class="navbar navbar-default navbar-fixed-top" v-if="$store.getters.onLoaded">
         <div class="container-fluid">
           <ul class="nav navbar-nav">
-            <li :class="{ 'active': $route.name == 'dashboard' }"><a href="#dashboard"><i class="fa fa-home" aria-hidden="true"></i> <span>DASHBOARD</span></a></li>
-            <li :class="{ 'active': $route.name == 'anime-list' }"><a href="#list"><i class="fa fa-list" aria-hidden="true"></i> <span>ANIME</span></a></li>
-            <li :class="{ 'active': $route.name == 'setting' }"><a href="#setting"><i class="fa fa-cogs" aria-hidden="true"></i> <span>SETTING</span></a></li>
+            <router-link :to="{ name: 'dashboard' }" tag="li" active-class="active" exact-active-class="active">
+              <a href="#"><i class="fa fa-home" aria-hidden="true"></i> <span>DASHBOARD</span></a>
+            </router-link>
+            <router-link :to="{ name: 'anime' }" tag="li" active-class="active" exact-active-class="active">
+              <a href="#"><i class="fa fa-list" aria-hidden="true"></i> <span>ANIME</span></a>
+            </router-link>
+            <router-link :to="{ name: 'setting' }" tag="li" active-class="active" exact-active-class="active">
+              <a href="#"><i class="fa fa-cogs" ar ia-hidden="true"></i> <span>SETTING</span></a>
+            </router-link>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li :class="{ 'active': $route.name == 'sign' }" v-if="!$store.getters.offline"><a href="#sign"><i class="fa fa-sign-in" aria-hidden="true"></i> SIGN IN</a></li>

@@ -1,11 +1,11 @@
-const state = {
+let state = {
   offline: false,
   loaded: false,
   alert: false,
   wait: false
 }
 
-const mutations = {
+let mutations = {
   ONLINE (state, online) {
     state.offline = !online
     state.loaded = true

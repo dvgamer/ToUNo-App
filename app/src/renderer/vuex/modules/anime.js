@@ -3,6 +3,11 @@ const state = {
     run: 0,
     text: ''
   },
+  action: {
+    search: false,
+    save: false
+  },
+  viewer: true,
   path: null,
   dialog: false,
   loadding: false,
@@ -21,6 +26,10 @@ const state = {
 // = files: []
 
 const mutations = {
+  'anime-action' (state, a) {
+    state.action.search = !a.search ? state.action.search : a.search
+    state.action.save = !a.save ? state.action.save : a.save
+  },
   'anime-set_path' (state, path) {
     state.path = path
     if (!path && path !== '') {
@@ -32,6 +41,9 @@ const mutations = {
   },
   'anime-loadding' (state) {
     state.loadding = !state.loadding
+  },
+  'anime-mode-view' (state, mode) {
+    state.viewer = mode
   },
   'anime-new_dialog' (state, show) {
     state.dialog = show
