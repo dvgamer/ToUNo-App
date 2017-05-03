@@ -27,8 +27,8 @@ const state = {
 
 const mutations = {
   'anime-action' (state, a) {
-    state.action.search = !a.search ? state.action.search : a.search
-    state.action.save = !a.save ? state.action.save : a.save
+    state.action.search = typeof a.search === 'undefined' ? state.action.search : a.search
+    state.action.save = typeof a.save === 'undefined' ? state.action.save : a.save
   },
   'anime-set_path' (state, path) {
     state.path = path

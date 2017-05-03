@@ -7,6 +7,24 @@
           <i class="fa fa-search" aria-hidden="true"></i>
         </div>
       </form>
+      <form v-else>
+        <button v-if="!$store.getters.offline" 
+          :disabled="EventSave || EventSearch || $store.state.anime.source.length == 0" 
+          :class="['btn', $store.state.anime.source.length > 0 ? 'btn-info' : '' ]"
+          icon="search" 
+          :loading="EventSearch" 
+          @click="onSearchItems">
+          <i class="fa fa-search" aria-hidden="true"></i> Search Anime
+        </button>
+        <button 
+          :disabled="EventSave || EventSearch || $store.state.anime.source.length == 0"
+          :class="['btn', $store.state.anime.source.length > 0 ? 'btn-warning' : '' ]"
+          icon="upload" 
+          :loading="EventSave" 
+          @click="onSaveItems">
+          <i class="fa fa-cloud-upload" aria-hidden="true"></i> Save Anime
+        </button>
+      </form>
     </div>
     <div class="col-sm-8" style="padding-right:30px;"> 
       <v-model :show="anime_dialog_new" :loading="wait"
@@ -23,7 +41,7 @@
             <label class="col-sm-3 control-label" for="txtFolder">Folder</label>
             <div class="col-sm-8">
               <div class="input-group">
-                <input readonly :disabled="wait" type="text" class="form-control" id="txtFolder" v-model="setPath" placeholder="Folder">
+                <input :disabled="wait" type="text" class="form-control" id="txtFolder" v-model="setPath" placeholder="Directory path">
                 <span class="input-group-btn">
                   <button class="btn btn-default" :disabled="wait" type="button" @click="onBrowse">Browse</button>
                 </span>
@@ -58,6 +76,10 @@
 </template>
 <script>
   import { ipcRenderer as ipc } from 'electron'
+  import async from 'async-q'
+  import Q from 'q'
+
+  import axios from '../../lib/axios'
   import store from 'renderer/vuex/store'
 
   ipc.on('CLIENT_GET_FOLDER_ANIME', (e, path) => {
@@ -102,6 +124,9 @@
       }
     },
     methods: {
+      getIndex (item) {
+        return (this.$store.state.anime.items || []).indexOf(item)
+      },
       onBrowse () {
         this.$store.commit('anime-loadding')
         ipc.send('SERVER_GET_FOLDER_ANIME')
@@ -129,11 +154,141 @@
       dialogClose () {
         this.anime_dialog_new = false
       },
+      getName (item) {
+        return this.filterAnime(item).title_romaji || (item.anime.length ? `Found ${item.anime.length}` : '')
+      },
+      filterAnime (item) {
+        let anime = item.anime.filter(a => a.id === item.anilist)[0] || {}
+        return anime || {}
+      },
+      logicAnimeName (name) {
+        return name.replace(/\[.*?\]|\(.*?\)|\{.*?\}|/ig, '').trim().match(/[A-Z0-9]+/ig).join(' ')
+      },
+      logicAnimeCheck (item) {
+        let vm = this
+        if (item.anime.length === 1) {
+          vm.$store.commit('anime-set_anilist', { index: vm.getIndex(item), id: item.anime[0].id })
+        } else if (item.anime.length > 1) {
+          let getName = vm.logicAnimeName(item.name)
+          item.anime.forEach(list => {
+            if (getName.toLowerCase() === list.title_romaji.toLowerCase()) {
+              vm.$store.commit('anime-set_anilist', { index: vm.getIndex(item), id: list.id })
+            }
+          })
+        }
+      },
+      onSearchItems () {
+        let all = []
+        let vm = this
+        vm.EventSearch = true
+        vm.rowItem = { anime: [] }
+        vm.Items.forEach((item) => {
+          let index = vm.getIndex(item)
+          all.push(() => {
+            let def = Q.defer()
+            if (item.verify) {
+              vm.$store.commit('anime-prepare', index)
+              let getName = vm.logicAnimeName(item.name)
+              console.log(index, getName)
+              axios({ method: 'post', url: `/anilist/search/${getName}` }).then(res => {
+                console.log('POST /', res)
+                vm.$store.commit('anime-load_list', { index: index, item: res.data })
+                if (!item.anilist) vm.logicAnimeCheck(item)
+                def.resolve()
+              })
+            } else {
+              def.resolve()
+            }
+            return def.promise
+          })
+        })
+        async.series(all).then(() => {
+          vm.EventSearch = false
+          vm.$store.commit('anime-prepare')
+        }).catch(err => {
+          console.log(err)
+        })
+      },
+      onSaveItems () {
+        let vm = this
+        let all = []
+
+        vm.save = true
+        vm.rowItem = { anime: [] }
+        vm.Items.forEach((item) => {
+          if (item.verify && item.anilist) {
+            let index = vm.getIndex(item)
+            let getAnime = {
+              id: null,
+              anilist_id: item.anilist,
+              path: item.path,
+              files: item.files
+            }
+            all.push(() => {
+              // console.log('setAnime', getAnime)
+              vm.$store.commit('anime-prepare', index)
+              return axios({
+                method: 'post',
+                data: getAnime,
+                url: `/anilist/save`,
+                json: true
+              }).then(res => {
+                if (!res.data.error) {
+                  getAnime = res.data
+                  getAnime.id = !res.data.found ? res.data.id : ''
+
+                  vm.$store.commit('anime-save', {
+                    id: getAnime.id,
+                    index: index,
+                    duplicate: res.data.found,
+                    name: getAnime.romaji
+                  })
+                  return getAnime
+                } else {
+                  throw new Error('Server Save anime error: ' + res.data.error)
+                }
+              })
+            })
+          }
+        })
+
+        async.series(all).then(anime => {
+          vm.$store.commit('anime-prepare')
+          vm.$store.commit('anime-cb', () => {
+            let aWait = false
+            vm.Items.forEach(item => {
+              if (!item.id || item.duplicate) aWait = true
+            })
+            if (aWait) vm.EventSave = false
+          })
+
+          ipc.send('SERVER_SAVED_ANIME', anime)
+          console.log('onSaved done.')
+        }).catch(err => {
+          vm.EventSave = false
+          console.log('onSaved', err)
+        })
+      },
       onRefresh () {
         console.log('onRefresh', this.$store.state.anime.source.length)
       }
     },
     computed: {
+      Items: {
+        get: function () {
+          let anime = this.$store.state.anime.items || []
+          let INDEX = 0
+          let LIMIT = 20
+          return anime.filter((item) => {
+            let check = false
+            if (INDEX < LIMIT && !item.saved) {
+              INDEX++
+              check = true
+            }
+            return check
+          })
+        }
+      },
       wait: {
         get () {
           return this.$store.state.anime.loadding
@@ -181,7 +336,11 @@
       }
     },
     created () {
-
+      if (!this.anime_view) {
+        this.$router.push({ name: 'anime-new' })
+      } else {
+        this.$router.push({ name: 'anime-list' })
+      }
     }
   }
 </script>
@@ -213,9 +372,6 @@
   }
   .panel, .table thead tr, .table thead th {
     border-radius: 0px !important;
-  }
-  .folder input {
-    background-color: #FFF;
   }
   .fa-list {
     font-size: 1.35rem;

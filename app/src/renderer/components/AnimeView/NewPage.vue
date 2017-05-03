@@ -16,7 +16,7 @@
       </tr>
     </thead>
   </table>
-  <div class="table-limit">
+  <div class="table-limit table-new">
     <table class="table table-striped table-hover" style="margin: -1px 0;">
       <colgroup>
         <col style="width:5%"/>
@@ -55,8 +55,26 @@
               <div style="font-size:0.8rem"><b>{{getName(anime)}}</b></div>
             </div>
           </td>
-          <td class="text-center" style="padding-top:15px;">
-            action
+          <td class="text-center">
+            <div v-if="!EventSearch && !EventSave && !anime.id">
+              <button
+                :class="['btn','btn-sm', !anime.verify ? 'btn-default' : 'btn-danger' ]"
+                size="small"
+                @click="onToggle(anime)">
+                <i class="fa" :class="!anime.verify?'fa-undo':'fa-ban'" aria-hidden="true"></i>
+              </button>
+              <button
+                v-if="(anime.anime || []).length"
+                :class="['btn','btn-sm', 'btn-success']"
+                @click="onSelectAnime">
+                <i class="fa fa-th-list" aria-hidden="true"></i>
+              </button>
+              <button
+                v-if="anime.duplicate"
+                :class="['btn','btn-sm', 'btn-success']">
+                <i class="fa fa-folder-open" aria-hidden="true"></i>
+              </button>
+            </div>
           </td>
         </tr>
         <tr v-if="Items.length == 0" class="transection">
@@ -76,11 +94,6 @@
 </template>
 
 <script>
-  import { ipcRenderer as ipc } from 'electron'
-  import async from 'async-q'
-  import Q from 'q'
-
-  import axios from '../../../lib/axios'
   import store from 'renderer/vuex/store'
 
   export default {
@@ -107,120 +120,13 @@
         return episode === item.files.length ? episode : `${item.files.length}${episode ? ` (${episode})` : ''}`
       },
       filterAnime (item) {
-        let anime = item.anime.filter(a => a.id === item.anilist)[0] || {}
+        let anime = null
+        if (item.anime.length) anime = item.anime.filter(a => a.id === item.anilist)[0] || {}
         return anime || {}
-      },
-      logicAnimeName (name) {
-        return name.replace(/\[.*?\]|\(.*?\)|\{.*?\}|/ig, '').trim().match(/[A-Z0-9]+/ig).join(' ')
-      },
-      logicAnimeCheck (item) {
-        let vm = this
-        if (item.anime.length === 1) {
-          vm.$store.commit('anime-set_anilist', { index: vm.getIndex(item), id: item.anime[0].id })
-        } else if (item.anime.length > 1) {
-          let getName = vm.logicAnimeName(item.name)
-          item.anime.forEach(list => {
-            if (getName.toLowerCase() === list.title_romaji.toLowerCase()) {
-              vm.$store.commit('anime-set_anilist', { index: vm.getIndex(item), id: list.id })
-            }
-          })
-        }
       },
       onItems (value, row) {
         console.log(value, row)
         return false
-      },
-      onSearchItems () {
-        let all = []
-        let vm = this
-        vm.EventSearch = true
-        vm.rowItem = { anime: [] }
-        vm.Items.forEach((item) => {
-          let index = vm.getIndex(item)
-          all.push(() => {
-            let def = Q.defer()
-            if (item.verify) {
-              vm.$store.commit('anime-prepare', index)
-
-              let getName = vm.logicAnimeName(item.name)
-              axios({ method: 'post', url: `/anilist/search/${getName}` }).then(res => {
-                console.log('search', res.data)
-                vm.$store.commit('anime-load_list', { index: index, item: res.data })
-                if (!item.anilist) vm.logicAnimeCheck(item)
-                def.resolve()
-              })
-            } else {
-              def.resolve()
-            }
-            return def.promise
-          })
-        })
-        async.series(all).then(() => {
-          vm.$store.commit('anime-prepare')
-          vm.EventSearch = false
-        }).catch(err => {
-          console.log(err)
-        })
-      },
-      onSaveItems () {
-        let vm = this
-        let all = []
-
-        vm.save = true
-        vm.rowItem = { anime: [] }
-        vm.Items.forEach((item) => {
-          if (item.verify && item.anilist) {
-            let index = vm.getIndex(item)
-            let getAnime = {
-              id: null,
-              anilist_id: item.anilist,
-              path: item.path,
-              files: item.files
-            }
-            all.push(() => {
-              // console.log('setAnime', getAnime)
-              vm.$store.commit('anime-prepare', index)
-              return axios({
-                method: 'post',
-                data: getAnime,
-                url: `/anilist/save`,
-                json: true
-              }).then(res => {
-                if (!res.data.error) {
-                  getAnime = res.data
-                  getAnime.id = !res.data.found ? res.data.id : ''
-
-                  vm.$store.commit('anime-save', {
-                    id: getAnime.id,
-                    index: index,
-                    duplicate: res.data.found,
-                    name: getAnime.romaji
-                  })
-                  return getAnime
-                } else {
-                  throw new Error('Server Save anime error: ' + res.data.error)
-                }
-              })
-            })
-          }
-        })
-
-        async.series(all).then(anime => {
-          vm.$store.commit('anime-prepare')
-          vm.$store.commit('anime-cb', () => {
-            let aWait = false
-            vm.Items.forEach(item => {
-              if (!item.id || item.duplicate) aWait = true
-            })
-            if (aWait) vm.save = false
-          })
-
-          ipc.send('SERVER_SAVED_ANIME', anime)
-          console.log('onSaved done.')
-        }).catch(err => {
-          vm.save = false
-          console.log('onSaved', err)
-        })
       },
       onToggle (item) {
         this.$store.commit('anime-set_verify', this.getIndex(item))
@@ -307,6 +213,7 @@
 }
 .table > tbody {
   height: 400px;
+  color: #000;
 }
 .table > tbody > tr.transection, .table > tbody > tr.transection:hover {
     background-color: #f9f9f9 !important;
@@ -318,5 +225,13 @@
   padding: 10px 0px;
   height: calc(100vh - 181px);
   vertical-align: middle;
-} 
+}
+.table.table-new .btn-sm {
+  padding: 0px 4px !important;
+  font-size: 1.3rem !important;
+}
+.table.table-new .input-sm {
+  height: 21px !important;
+  padding: 2px 2px !important;
+}
 </style>

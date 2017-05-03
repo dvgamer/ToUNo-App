@@ -1,6 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow } from 'electron'
+import path from 'path'
 
 require('./anime')()
 
@@ -19,7 +20,8 @@ function createWindow () {
     minHeight: 600,
     height: 640,
     'node-integration': false,
-    title: app.getName()
+    title: app.getName(),
+    icon: path.join(__dirname, 'app/icons/touno.ico')
   })
 
   mainWindow.loadURL(winURL)

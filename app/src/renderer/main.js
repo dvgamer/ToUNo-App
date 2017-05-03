@@ -1,11 +1,8 @@
 import Vue from 'vue'
-import BootstrapVue from 'bootstrap-vue'
 import Electron from 'vue-electron'
 import Resource from 'vue-resource'
 import Router from 'vue-router'
 
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './bootwatch/css/bootstrap.css'
 import './bootwatch/css/font-awesome.css'
 
@@ -13,7 +10,6 @@ import App from './App'
 import routes from './routes'
 import vModel from './modules/model.vue'
 
-Vue.use(BootstrapVue)
 Vue.use(Electron)
 Vue.use(Resource)
 Vue.use(Router)
