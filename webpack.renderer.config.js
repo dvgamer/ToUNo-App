@@ -10,22 +10,14 @@ const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
-
 let rendererConfig = {
   devtool: '#eval-source-map',
   devServer: { overlay: true },
-  entry: [
-    path.join(__dirname, 'app/src/renderer/main.js')
-  ],
+  entry: {
+    renderer: path.join(__dirname, 'app/src/renderer/main.js')
+  },
   externals: Object.keys(pkg.dependencies || {}),
   module: {
-    loaders: [
-      // the url-loader uses DataUrls. 
-      // the file-loader emits files. 
-      { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
-      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader" }
-
-    ],
     rules: [
       {
         test: /\.css$/,
@@ -93,12 +85,7 @@ let rendererConfig = {
       template: './app/index.ejs',
       appModules: process.env.NODE_ENV !== 'production'
         ? path.resolve(__dirname, 'app/node_modules')
-        : false,
-    }),
-    new webpack.ProvidePlugin({
-      $: "jquery",
-      jQuery: "jquery",
-      "window.jQuery": "jquery"
+        : false
     }),
     new webpack.NoEmitOnErrorsPlugin()
   ],

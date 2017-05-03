@@ -1,25 +1,25 @@
 import Vue from 'vue'
+import BootstrapVue from 'bootstrap-vue'
 import Electron from 'vue-electron'
 import Resource from 'vue-resource'
 import Router from 'vue-router'
 
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './bootwatch/css/bootstrap.css'
 import './bootwatch/css/font-awesome.css'
 
-import 'bootstrap/dist/js/bootstrap.js'
-
 import App from './App'
 import routes from './routes'
-
 import vModel from './modules/model.vue'
 
-Vue.component('v-model', vModel)
-Vue.use(Electron)
+Vue.use(BootstrapVue)
 Vue.use(Electron)
 Vue.use(Resource)
 Vue.use(Router)
 
-Vue.config.debug = false
+Vue.component('v-model', vModel)
+Vue.config.debug = true
 
 const router = new Router({
   scrollBehavior: () => ({ y: 0 }),
