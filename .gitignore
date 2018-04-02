@@ -1,13 +1,18 @@
-.DS_Store
-app/dist/index.html
-app/dist/main.js
-app/dist/renderer.js
-app/dist/styles.css
-builds/*
-dist/*
-coverage
-node_modules/
+# dependencies
+node_modules
+
+# logs
 npm-debug.log
-npm-debug.log.*
-thumbs.db
-!.gitkeep
+
+# Nuxt build
+.nuxt
+
+# Nuxt generate
+dist
+
+# Mac OS
+.DS_Store
+
+# Electron-packager
+electronuxt-*
+build

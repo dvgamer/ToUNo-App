@@ -1,29 +1,35 @@
-# ToUNo-App
+# Electron
+Create an Electron app that serves a Nuxt.js app
 
-โปรแกรมเช็คอะนิเมะไฟล์ในเครื่อง เช็คจำนวนตอน แล้วชื่อเรื่องที่ซ้ำกัน 
+## Installation
 
-## หลักการทำงาน
+Install the dependencies:
+```bash
+npm install # Or yarn install
+```
 
-เลือกโฟลเดอร์ขึ้นมาจากเครื่องแล้วดึงข้อมูลจาก API `anilist.co` เพื่อเก็บข้อมูลลง MongoDB ด้วยเซริฟเวอร์ `touno.co` ตรวจสอบข้อมูลในเครื่อง และหเก็บข้อมูลขึ้น cloud database
+If you plan to use the `npm run pack` command below, ensure electron-packager is installed globally:
+```bash
+npm install -g electron-packager # Or yarn global add electron-packager
+```
 
----
+## Development mode
 
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:9080
+```bash
 npm run dev
+```
 
-# build electron app for production
+## Production mode
+
+```bash
 npm run build
+npm run start
+```
 
-# lint all JS/Vue component files in `app/src`
-npm run lint
+## Package the app
 
-# run webpack in production
+```bash
 npm run pack
 ```
----
+
+See more on [electron-packager documentation](https://github.com/electron-userland/electron-packager).
