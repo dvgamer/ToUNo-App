@@ -7,12 +7,10 @@ const http = require('http')
 let config = require('./nuxt.config.js')
 const _NUXT_URL_ = (process.argv || [])[3] || `http://localhost:3000`
 config.dev = !((process.env.NODE_ENV || 'production') === 'production')
-if (config.dev) require('./.electron-nuxt/devtools.js')
-
 /*
-** Electron appasasddasdasd
+** Electron app
 */
-const POLL_INTERVAL = 300
+const POLL_INTERVAL = 500
 const pollServer = () => {
   http.get(_NUXT_URL_, res => {
     const SERVER_DOWN = res.statusCode !== 200
@@ -36,7 +34,7 @@ const newWin = () => {
     slashes: true
   }))
   win.on('closed', () => win = null)
-  pollServer()
+  setTimeout(pollServer, POLL_INTERVAL)
 }
 
 app.on('ready', newWin)

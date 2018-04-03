@@ -15,15 +15,14 @@ const mainServer = () => {
   if (_NUXT_URL_) {
     if (proc) kill(proc.pid, 'SIGKILL')
     let createdServer = () => {
-      consola.debug('electron starting...')
+      console.log('electron starting...')
       proc = spawn(electron, ['--inspect=5858', path.join(__dirname, '../main.js'), _NUXT_URL_])
 
-      proc.stdout.on('data', data => { consola.debug(data.toString()) })
-      proc.stderr.on('data', data => { consola.error(data.toString()) })
-      proc.stderr.on('error', data => { consola.error(data.toString()) })
+      proc.stdout.on('data', console.log)
+      proc.stderr.on('data', consola.error)
 
       proc.on('close', () => {
-        consola.debug('close....')
+        console.log('close....')
         createdServer()
       })
     }
