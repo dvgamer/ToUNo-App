@@ -25,6 +25,7 @@
     "electron": "^1.8.4",
     "electron-debug": "^1.5.0",
     "electron-packager": "^10.1.2",
+    "jquery": "^1.9.1",
     "node-sass": "^4.8.3",
     "sass-loader": "^6.0.7",
     "tree-kill": "^1.2.0",

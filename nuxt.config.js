@@ -21,6 +21,7 @@ module.exports = {
     'styles/index.scss'
   ],
   plugins: [
+    'node_modules/bootstrap/js/src/index.js',
     'plugins/fortawesome.js'
   ],
   build: {
