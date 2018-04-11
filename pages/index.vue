@@ -10,8 +10,7 @@
       <b-row>
         <b-col>
           <h3 style="padding:30px 0 12px 0">
-            Dashboard
-            <small class="text-muted">OVERVIEW</small>
+            Dashboard <small class="text-muted">OVERVIEW</small>
           </h3>
         </b-col>
       </b-row>
