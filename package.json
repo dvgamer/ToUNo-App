@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./.electron-nuxt",
-    "build": "nuxt build",
+    "build": "nuxt generate",
     "pack": "npm run build && electron-packager ./ --overwrite"
   },
   "dependencies": {

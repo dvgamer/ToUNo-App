@@ -9,18 +9,40 @@
     <b-col v-else>
       <b-row>
         <b-col>
-          <h3 style="padding:30px 0 12px 0">
+          <h3 style="padding:10px 0 12px 0">
             Dashboard <small class="text-muted">OVERVIEW</small>
           </h3>
         </b-col>
       </b-row>
-      <b-row>
-        <b-col md="22">
-          <b-card header="Card Title">
+      <b-row style="padding-bottom:15px;">
+        <b-col md="12">
+          <b-card bg-variant="warning" text-variant="white" title="Airing">
             <p class="card-text">
               With supporting text below as a natural lead-in to additional content.
             </p>
-            <b-button href="#" variant="primary">Go somewhere</b-button>
+          </b-card>
+        </b-col>
+        <b-col md="12">
+          <b-card bg-variant="info" text-variant="white" title="Watching">
+            <p class="card-text">
+              With supporting text below as a natural lead-in to additional content.
+            </p>
+          </b-card>
+        </b-col>
+        <b-col md="12">
+          <b-card bg-variant="success" text-variant="white" title="Completed">
+            <p class="card-text">
+              With supporting text below as a natural lead-in to additional content.
+            </p>
+          </b-card>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col md="22">
+          <b-card header="Summary">
+            <p class="card-text">
+              With supporting text below as a natural lead-in to additional content.
+            </p>
           </b-card>
         </b-col>
         <b-col md="14">

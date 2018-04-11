@@ -15,10 +15,9 @@
         <b-nav-item-dropdown :disabled="!$store.state.initApp" right>
           <!-- Using button-content slot -->
           <template slot="button-content">
-            <i class="fas fa-cogs"></i> <span> Setting</span>
+            <i class="fas fa-wrench"></i> <span> Tools</span>
           </template>
-          <b-dropdown-item href="#">Profile</b-dropdown-item>
-          <b-dropdown-item href="#">Signout</b-dropdown-item>
+          <b-dropdown-item :to="{ name: 'rename' }" href="#">Regex Rename</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
 
