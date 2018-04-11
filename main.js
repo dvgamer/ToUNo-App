@@ -10,7 +10,7 @@ config.dev = !((process.env.NODE_ENV || 'production') === 'production')
 /*
 ** Electron app
 */
-const POLL_INTERVAL = 500
+const POLL_INTERVAL = 1000
 const pollServer = () => {
   http.get(_NUXT_URL_, res => {
     const SERVER_DOWN = res.statusCode !== 200
@@ -21,12 +21,25 @@ const pollServer = () => {
 
 let win = null // Current window
 const newWin = () => {
-  win = new BrowserWindow({
-    width: config.electron.width || 800,
-    height: config.electron.height || 600
-  })
+  console.log('configuration electron')
+  console.log(Object.assign({
+    title: 'Electron App',
+    width: 800,
+    height: 600
+  }, config.electron))
+  win = new BrowserWindow(Object.assign({
+    title: 'Electron App',
+    width: 800,
+    height: 600
+  }, config.electron))
+  win.setMenuBarVisibility(false)
   if (!config.dev) {
     return win.loadURL(_NUXT_URL_)
+  } else {
+    win.webContents.openDevTools()
+    win.webContents.on('devtools-opened', () => {
+      setImmediate(() => win.focus())
+    })
   }
   win.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
@@ -34,6 +47,12 @@ const newWin = () => {
     slashes: true
   }))
   win.on('closed', () => win = null)
+
+
+
+
+
+
   setTimeout(pollServer, POLL_INTERVAL)
 }
 

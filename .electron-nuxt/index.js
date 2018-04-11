@@ -18,8 +18,12 @@ const mainServer = () => {
       console.log('electron starting...')
       proc = spawn(electron, ['--inspect=5858', path.join(__dirname, '../main.js'), _NUXT_URL_])
 
-      proc.stdout.on('data', console.log)
-      proc.stderr.on('data', consola.error)
+      proc.stdout.on('data', (data) => {
+        if (data.toString()) consola.error(data.toString())
+      })
+      proc.stderr.on('data', (data) => {
+        if (data.toString()) consola.error(data.toString())
+      })
 
       proc.on('close', () => {
         console.log('close....')
