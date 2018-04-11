@@ -1,8 +1,9 @@
 module.exports = {
+  loading: false,
   electron: {
     title: 'aniStorage™',
     width: 1024,
-    height: 580,
+    height: 680,
     // minWidth: 1024,
     // minHeight: 580,
     // maxWidth: 600,
@@ -18,10 +19,10 @@ module.exports = {
     frame: true
   },
   css: [
-    'styles/index.scss'
+    '@/styles/index.scss'
   ],
   plugins: [
-    'node_modules/bootstrap/js/src/index.js',
+    'plugins/bootstrap.js',
     'plugins/fortawesome.js'
   ],
   build: {
