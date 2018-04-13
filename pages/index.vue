@@ -10,30 +10,27 @@
       <b-row>
         <b-col>
           <h3 style="padding:10px 0 12px 0">
-            Dashboard <small class="text-muted">OVERVIEW</small>
+            Overview <small class="text-muted">ANIME SEASON</small>
           </h3>
         </b-col>
       </b-row>
       <b-row style="padding-bottom:15px;">
         <b-col md="12">
-          <b-card bg-variant="warning" text-variant="white" title="Airing">
-            <p class="card-text">
-              With supporting text below as a natural lead-in to additional content.
-            </p>
+          <b-card class="dashboard airing" bg-variant="warning" 
+            text-variant="white" title="999 Airing">
+            <p class="card-text">airing or waiting a subtitle file.</p>
           </b-card>
         </b-col>
         <b-col md="12">
-          <b-card bg-variant="info" text-variant="white" title="Watching">
-            <p class="card-text">
-              With supporting text below as a natural lead-in to additional content.
-            </p>
+          <b-card class="dashboard watched" bg-variant="info" 
+            text-variant="white" title="999 Watched">
+            <p class="card-text">watching and finished.</p>
           </b-card>
         </b-col>
         <b-col md="12">
-          <b-card bg-variant="success" text-variant="white" title="Completed">
-            <p class="card-text">
-              With supporting text below as a natural lead-in to additional content.
-            </p>
+          <b-card class="dashboard completed" bg-variant="success" 
+            text-variant="white" title="999 Completed">
+            <p class="card-text">finished and checked.</p>
           </b-card>
         </b-col>
       </b-row>
@@ -92,7 +89,7 @@
   }
 </script>
 
-<style scoped>
+<style lang="scss">
   .panel-center {
     text-align: center;
     width: 500px;
@@ -110,6 +107,37 @@
     font-weight: bold;
     margin-top: 23px;
     color: #24688a;
+  }
+  .card.dashboard {
+    .card-title {
+      margin-bottom: 0.1rem;
+    }
+    .card-text {
+      font-size: 0.8rem;
+      > span + span {
+        margin-left: 15px;
+      }
+    }
+    > .card-body {
+      background-size: 58px;
+      background-repeat: no-repeat;
+      padding-left: 100px;
+    }
+
+    &.airing > .card-body {
+      background-position: 22px;
+      background-image: url('~/assets/icon-airing.png');
+    }
+    &.watched > .card-body {
+      background-position: 22px;
+      background-image: url('~/assets/icon-watched.png');
+      background-size: 82px;
+      padding-left: 123px;
+    }
+    &.completed > .card-body {
+      background-position: 19px;
+      background-image: url('~/assets/icon-completed.png');
+    }
   }
 </style>
 

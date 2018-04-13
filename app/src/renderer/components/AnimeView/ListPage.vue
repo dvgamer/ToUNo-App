@@ -15,7 +15,7 @@
         <th class="text-center">Episodes</th>
         <th>Romanji</th>
         <th class="text-center">Type</th>
-        <th class="text-center">Start</th>
+        <th class="text-center">Airing</th>
         <th class="text-center">Status</th>
       </tr>
     </thead>

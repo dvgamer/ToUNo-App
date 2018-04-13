@@ -6,7 +6,7 @@
         <b-nav-item to="/" :disabled="!$store.state.initApp" :exact="true">
           <i class="fas fa-home"></i> <span> Dashboard</span>
         </b-nav-item>
-        <b-nav-item :to="{ name: 'anime' }" :disabled="!$store.state.initApp">
+        <b-nav-item to="/anime" :disabled="!$store.state.initApp">
           <i class="fas fa-list"></i> <span> Anime</span>
         </b-nav-item>
       </b-navbar-nav>
@@ -17,7 +17,7 @@
           <template slot="button-content">
             <i class="fas fa-wrench"></i> <span> Tools</span>
           </template>
-          <b-dropdown-item :to="{ name: 'rename' }" href="#">Regex Rename</b-dropdown-item>
+          <b-dropdown-item to="/tools/rename" href="#">Regex Rename</b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
 
