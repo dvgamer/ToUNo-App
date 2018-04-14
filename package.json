@@ -1,35 +1,47 @@
 {
-  "name": "electronuxt",
-  "version": "1.1.1",
-  "description": "Create an Electron app that serves a Nuxt.js app",
+  "name": "ani-storage",
+  "version": "1.2.0",
   "main": "main.js",
-  "repository": "git@github.com:detrohutt/electronuxt.git",
-  "author": "Alexander Roberts <detrohutt@gmail.com>",
   "license": "MIT",
   "scripts": {
     "dev": "cross-env NODE_ENV=development node ./.electron-nuxt",
     "build": "nuxt generate",
-    "pack": "npm run build && electron-packager ./ --overwrite"
+    "pack": "npm run build && electron-builder ./ --overwrite"
   },
   "dependencies": {
+    "nuxt": "^1.4.0",
+    "bootstrap": "^4.1.0",
+    "bootstrap-vue": "^2.0.0-rc.6"
+  },
+  "devDependencies": {
     "@fortawesome/fontawesome": "^1.1.5",
     "@fortawesome/fontawesome-free-brands": "^5.0.10",
     "@fortawesome/fontawesome-free-solid": "^5.0.10",
-    "bootstrap": "^4.1.0",
-    "bootstrap-vue": "^2.0.0-rc.6",
-    "jquery": "^1.12.4",
-    "nuxt": "^1.0.0"
-  },
-  "devDependencies": {
-    "backpack-core": "^0.5.0",
     "consola": "^1.2.0",
     "cross-env": "^3.1.4",
     "electron": "^1.8.4",
-    "electron-debug": "^1.5.0",
-    "electron-packager": "^10.1.2",
     "node-sass": "^4.8.3",
     "sass-loader": "^6.0.7",
-    "tree-kill": "^1.2.0",
-    "watchr": "^4.0.1"
-  }
+    "tree-kill": "^1.2.0"
+  },
+  "description": "Create an Electron app that serves a Nuxt.js app",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dvgamer/app.anistorage-master.git"
+  },
+  "keywords": [
+    "anilist",
+    "anime",
+    "storage",
+    "electron",
+    "nuxt"
+  ],
+  "author": "Mr.Kananek Thongkam <info.dvgamer@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/dvgamer/app.anistorage-master/issues"
+  },
+  "homepage": "https://github.com/dvgamer/app.anistorage-master#readme"
 }

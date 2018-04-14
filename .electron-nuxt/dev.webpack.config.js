@@ -46,36 +46,19 @@ let mainConfig = {
     libraryTarget: 'commonjs2',
     path: path.join(__dirname, '../.nuxt/electron')
   },
-  plugins: [
-    new webpack.NoEmitOnErrorsPlugin()
-  ],
+  // plugins: [
+  //   new webpack.NoEmitOnErrorsPlugin()
+  // ],
   resolve: {
     extensions: ['.js', '.json', '.node']
   },
   target: 'electron-main'
 }
 
-/**
- * Adjust mainConfig for development settings
- */
-if (process.env.NODE_ENV !== 'production') {
-  mainConfig.plugins.push(
-    new webpack.DefinePlugin({
-      '__static': `"${path.join(__dirname, '../static').replace(/\\/g, '\\\\')}"`
-    })
-  )
-}
-
-/**
- * Adjust mainConfig for production settings
- */
-if (process.env.NODE_ENV === 'production') {
-  mainConfig.plugins.push(
-    new BabiliWebpackPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': '"production"'
-    })
-  )
-}
+mainConfig.plugins.push(
+  new webpack.DefinePlugin({
+    '__static': `"${path.join(__dirname, '../static').replace(/\\/g, '\\\\')}"`
+  })
+)
 
 module.exports = mainConfig

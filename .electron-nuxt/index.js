@@ -3,7 +3,6 @@ const http = require('http')
 const { spawn } = require('child_process')
 const electron = require('electron')
 const path = require('path')
-const watchr = require('watchr')
 const consola = require('consola')
 const kill = require('tree-kill')
 
@@ -26,7 +25,6 @@ const mainServer = () => {
       })
 
       proc.on('close', () => {
-        console.log('close....')
         createdServer()
       })
     }
@@ -34,7 +32,7 @@ const mainServer = () => {
   }
 }
 
-const renderServer =  async () => {
+const renderServer = async () => {
   // Import and Set Nuxt.js options
   let config = require('./../nuxt.config.js')
   config.dev = !((process.env.NODE_ENV || 'production') === 'production')
@@ -52,9 +50,10 @@ const renderServer =  async () => {
   await server.listen()
 }
 
-
-renderServer().then(() => {
+(async () => {
+  await renderServer()
+  
   _NUXT_URL_ = `http://localhost:${server.address().port}`
   consola.start(`Electron Compile, Nuxt on ${_NUXT_URL_}`)
-  mainServer()
-}).catch(consola.error)
+  await mainServer()
+})().catch(consola.error)

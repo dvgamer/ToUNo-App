@@ -6,12 +6,12 @@ import walk from 'walk'
 import async from 'async-q'
 import Q from 'q'
 
-let getFile = folder => {
-  return {
-    desktop: `${folder}\\Desktop.ini`,
-    image: `${folder}\\ANIME.jpg`
-  }
-}
+// let getFile = folder => {
+//   return {
+//     desktop: `${folder}\\Desktop.ini`,
+//     image: `${folder}\\ANIME.jpg`
+//   }
+// }
 
 const exec = (cmd, arg) => {
   let def = Q.defer()
@@ -98,90 +98,90 @@ module.exports = function () {
     })
   })
 
-  ipc.on('SERVER_GET_FOLDER_ANIME', function (e) {
-    dialog.showOpenDialog({
-      properties: ['openDirectory']
-    }, function (files) {
-      e.sender.send('CLIENT_GET_FOLDER_ANIME', files)
-    })
-  })
+  // ipc.on('SERVER_GET_FOLDER_ANIME', function (e) {
+  //   dialog.showOpenDialog({
+  //     properties: ['openDirectory']
+  //   }, function (files) {
+  //     e.sender.send('CLIENT_GET_FOLDER_ANIME', files)
+  //   })
+  // })
 
-  ipc.on('SERVER_GET_LIST_ANIME', function (e, source) {
-    if (fs.existsSync(source) && fs.lstatSync(source).isDirectory()) {
-      let items = []
-      let totalTime = 0
-      // let index = 0
+  // ipc.on('SERVER_GET_LIST_ANIME', function (e, source) {
+  //   if (fs.existsSync(source) && fs.lstatSync(source).isDirectory()) {
+  //     let items = []
+  //     let totalTime = 0
+  //     // let index = 0
 
-      let all = fs.readdirSync(source).map(name => {
-        return () => {
-          let item = {
-            saved: false,
-            verify: true,
-            prepare: false,
-            anilist: 0,
-            anime_id: null,
-            name: name,
-            path: `${source}\\${name}`,
-            files: [],
-            anime: []
-          }
+  //     let all = fs.readdirSync(source).map(name => {
+  //       return () => {
+  //         let item = {
+  //           saved: false,
+  //           verify: true,
+  //           prepare: false,
+  //           anilist: 0,
+  //           anime_id: null,
+  //           name: name,
+  //           path: `${source}\\${name}`,
+  //           files: [],
+  //           anime: []
+  //         }
 
-          let def = Q.defer()
-          let walker = walk.walk(item.path, {})
-          let time = Math.floor(Date.now())
-          let isAnime = false
-          let file = getFile(item.path)
+  //         let def = Q.defer()
+  //         let walker = walk.walk(item.path, {})
+  //         let time = Math.floor(Date.now())
+  //         let isAnime = false
+  //         let file = getFile(item.path)
 
-          if (fs.existsSync(file.desktop)) {
-            let config = getINI(file.desktop)
-            if (config['App-ToUNo'].id) isAnime = true
-          }
+  //         if (fs.existsSync(file.desktop)) {
+  //           let config = getINI(file.desktop)
+  //           if (config['App-ToUNo'].id) isAnime = true
+  //         }
 
-          if (isAnime) {
-            // console.log('found anime')
-            def.resolve()
-          } else {
-            walker.on('file', function (root, file, next) {
-              let ignore = [ 'Desktop.ini', 'ANIME.jpg', 'ANIME.ico' ]
-              if (ignore.indexOf(file.name) === -1) {
-                let list = {
-                  uid: file.uid,
-                  name: file.name,
-                  size: file.size,
-                  ctime: file.ctime
-                }
-                item.files.push(list)
-              }
-              next()
-            })
+  //         if (isAnime) {
+  //           // console.log('found anime')
+  //           def.resolve()
+  //         } else {
+  //           walker.on('file', function (root, file, next) {
+  //             let ignore = [ 'Desktop.ini', 'ANIME.jpg', 'ANIME.ico' ]
+  //             if (ignore.indexOf(file.name) === -1) {
+  //               let list = {
+  //                 uid: file.uid,
+  //                 name: file.name,
+  //                 size: file.size,
+  //                 ctime: file.ctime
+  //               }
+  //               item.files.push(list)
+  //             }
+  //             next()
+  //           })
 
-            // console.log(`Tasks-${item.name} Begin...`);
-            walker.on('errors', function (root, nodeStatsArray, next) {
-              // console.log(`error-${root}`);
-              next()
-            })
+  //           // console.log(`Tasks-${item.name} Begin...`);
+  //           walker.on('errors', function (root, nodeStatsArray, next) {
+  //             // console.log(`error-${root}`);
+  //             next()
+  //           })
 
-            walker.on('end', function () {
-              let elapsed = Math.floor(Date.now()) - time
-              totalTime += elapsed
-              if (item.files.length > 0) {
-                // index++
-                items.push(item)
-              }
-              // console.log(`Tasks-${item.name} Successful (${(elapsed/1000).toFixed(2)}s`);
-              def.resolve()
-            })
-          }
-          return def.promise
-        }
-      })
+  //           walker.on('end', function () {
+  //             let elapsed = Math.floor(Date.now()) - time
+  //             totalTime += elapsed
+  //             if (item.files.length > 0) {
+  //               // index++
+  //               items.push(item)
+  //             }
+  //             // console.log(`Tasks-${item.name} Successful (${(elapsed/1000).toFixed(2)}s`);
+  //             def.resolve()
+  //           })
+  //         }
+  //         return def.promise
+  //       }
+  //     })
 
-      async.series(all).then(results => {
-        console.log(`Total ${all.length} Tasks Successful (${(totalTime / 1000).toFixed(2)}s)`)
-        e.sender.send('CLIENT_GET_LIST_ANIME', { found: items.length > 0, items: items })
-      })
-    } else {
-      e.sender.send('CLIENT_GET_LIST_ANIME', { found: false, items: [] })
-    }
-  })
+  //     async.series(all).then(results => {
+  //       console.log(`Total ${all.length} Tasks Successful (${(totalTime / 1000).toFixed(2)}s)`)
+  //       e.sender.send('CLIENT_GET_LIST_ANIME', { found: items.length > 0, items: items })
+  //     })
+  //   } else {
+  //     e.sender.send('CLIENT_GET_LIST_ANIME', { found: false, items: [] })
+  //   }
+  // })
 }
