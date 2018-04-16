@@ -27,7 +27,7 @@ const exec = (cmd, arg) => {
 }
 
 const attrib = (arg, file) => {
-  return exec('C:/Windows/System32/attrib.exe', [ `${arg}s`, `${arg}h`, file ])
+  return exec('c:/windows/system32/attrib.exe', [ `${arg}s`, `${arg}h`, file ])
 }
 
 const desktop = item => {

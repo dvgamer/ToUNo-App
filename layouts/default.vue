@@ -34,12 +34,15 @@
 </div>
 </template>
 <script>
-export default {
-  data () {
-    return {
+  const localforage = require('localforage')
+  export default {
+    data () {
+      return { }
+    },
+    created () {
+      this.$store.commit('setInitApp', true)
     }
   }
-}
 </script>
 
 <style lang="scss">

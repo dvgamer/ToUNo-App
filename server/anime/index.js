@@ -1,10 +1,72 @@
 const { dialog } = require('electron')
 const ipc = require('electron').ipcMain
 const path = require('path')
-const { lstatSync, readdirSync, existsSync } = require('fs')
-const { join } = require('path')
+const { initDirectory, initAnime } = require('../walk')
 
-let iniMapFolder = folder => { desktop: `${folder}\\Desktop.ini`, image: `${folder}\\ANIME.jpg` }
+// const attrib = 'c:/windows/system32/attrib.exe'
+// const unlock = file => new Promise((resolve, reject) => {
+//   exec(attrib, [ '-s', '-h', file ], error => {
+//     if (error) reject(error); else resolve()
+//   })
+// })
+// const lock = file => new Promise((resolve, reject) => {
+//   exec(attrib, [ '+s', '+h', file ], error => {
+//     if (error) reject(error); else resolve()
+//   })
+// })
+
+
+// const updateDesktopINI = item => {
+//   const setINI = (file, content) => {
+//     let data = new Buffer(stringify(content).replace(/\[\\\./ig, '[.'))
+
+//     try {
+//       if (!fs.existsSync(file)) {
+//         fs.writeFileSync(file, data)
+//         return attrib('+', file)
+//       } else {
+//         return attrib('-', file).then(() => {
+//           fs.writeFileSync(file, data)
+//           return attrib('+', file)
+//         })
+//       }
+//     } catch (e) {
+//       console.log('setINI', file, e)
+//       return {}
+//     }
+//   }
+//   return () => {
+//     let file = getFile(item.path)
+
+//     item.anime.sound = item.anime.sound.join(',')
+//     item.anime.subtitle = item.anime.subtitle.join(',')
+//     let iniDesktop = {
+//       '.ShellClassInfo': {
+//         ConfirmFileOp: 0,
+//         NoSharing: 1,
+//         IconFile: 'ANIME.ico',
+//         IconIndex: 0,
+//         InfoTip: item.folder_name
+//       },
+//       'ViewState': {
+//         Mode: 4,
+//         Vid: '{137E7700-3573-11CF-AE69-08002B2E1262}',
+//         FolderType: 'Videos',
+//         Logo: 'ANIME.jpg'
+//       },
+//       'App-ToUNo': {
+//         id: item.id,
+//         english: item.english,
+//         romaji: item.romaji,
+//         status: item.status,
+//         image: item.image
+//       },
+//       'Anime': item.anime
+//     }
+//     return setINI(file.desktop, iniDesktop)
+//   }
+// }
+
 
 module.exports = () => {
   ipc.on('DIALOG_OPEN_FOLDER', e => {
@@ -18,22 +80,48 @@ module.exports = () => {
   })
 
   ipc.on('FOLDER_LIST_ANIME', async (e, source) => {
-
-    const isDirectory = f => lstatSync(f).isDirectory()
-    const getDirectories = f => readdirSync(f).map(n => join(f, n)).filter(isDirectory)
-
-
-    let rootAnime = []
-    for (let i = 0; i < source.length; i++) {
-      let folder = source[i]
-      if (!isDirectory(folder)) return
-
-      let subfolder = getDirectories(folder)
-
+    let reportProgress = data => e.sender.send('FOLDER_LIST_PROGRESS', data)
+    console.log('FOLDER_LIST_ANIME:', `Loaded: ${source.length} folders`)
+    reportProgress({ status: '', step: 0, min: 0, max: source.length })
+    let listFolder = []
+    let maxFolder = 0
+    if (source.length > 0) {
+      for (let i = 0; i < source.length; i++) {
+        let { folder, name } = source[i]
+        reportProgress({ pretext: `Initialize Directory '${name}'...`, step: 1, min: i + 1 })
+        source[i].subfolder = await initDirectory(folder, reportProgress)
+        maxFolder += source[i].subfolder.length
+      }
+      console.log('FOLDER_LIST_ANIME:', `Total: ${maxFolder} folders`)
+      reportProgress({ status: '', step: 2, min: 0, max: maxFolder })
+   
+      let index = 1
+      for (let i = 0; i < source.length; i++) {
+        let { subfolder, name } = source[i]
+        reportProgress({ pretext: `Initialize Anime '${name}'...` })
+        for (let l = 0; l < subfolder.length; l++) {
+          reportProgress({ min: index })
+          let anime = await initAnime(subfolder[l], reportProgress)
+          if (anime) {
+            console.log('FOLDER_LIST_ANIME:', `Anime: ${anime.name}`)
+            listFolder.push(anime)
+          }
+          index++
+        }
+      }
+      reportProgress({ pretext: '' })
     }
+    e.sender.send('FOLDER_LIST_ANIME', listFolder)
+
+    //       let ini = iniMapFolder(item.path)
+
+    //       if (fs.existsSync(file.desktop)) {
+    //         let config = getINI(file.desktop)
+    //         if (config['App-ToUNo'].id) isAnime = true
+    //       }
 
 
-    e.sender.send('FOLDER_LIST_PROGRESS', {})
+
     // if (fs.existsSync(source) && fs.lstatSync(source).isDirectory()) {
     // let items = []
     // let totalTime = 0

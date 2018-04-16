@@ -14,7 +14,7 @@
             <b-dropdown-item @click="onToggleView">{{ $store.state.newAnime ? 'NEW ANIME' : 'ALL ANIME' }}</b-dropdown-item>
             <b-dropdown-divider></b-dropdown-divider>
           </b-dropdown>
-          <b-button v-if="!$store.state.newAnime" @click="onScanAnimeFolder"><i class="fas fa-search"></i> Scan Folder</b-button>
+          <b-button v-if="!$store.state.newAnime"><i class="fas fa-search"></i> Scan Folder</b-button>
           <b-btn v-if="!$store.state.newAnime" variant="success"><i class="fas fa-cloud-upload-alt"></i></b-btn>
           <b-input-group v-if="$store.state.newAnime">
             <b-form-input ref="btnSearch" size="sm" maxlength="50"
@@ -50,26 +50,29 @@
         </b-form>
       </b-modal>
 
-      <b-modal centered ref="modalProgress" hide-footer title="Please wait..." :hide-header-close="true" 
-        :no-fade="true" :no-close-on-backdrop="false" :no-close-on-esc="true" :no-enforce-focus="true">
+      <b-modal centered ref="modalProgress" hide-footer title="Please wait..." :hide-header-close="false" 
+        :no-fade="true" :no-close-on-backdrop="true" :no-close-on-esc="true" :no-enforce-focus="true">
         <div>
-          <b-progress variant="success" :value="getProgressAllMin" :max="getProgressAllMax"></b-progress>
-          <b-progress variant="info" :value="getProgressMin" :max="getProgressMax" style="margin-top:6px;"></b-progress>
-          <h6 v-text="getProgressText" style="color: #999; font-size: 0.8em;"></h6>
+          <h6 v-text="getProgressText" style="color: #333; font-size: 0.9em;"></h6>
+          <b-progress variant="success" :value="getProgressStepMin" :max="getProgressStepMax"></b-progress>
+          <b-progress variant="info" :value="getProgressMin" :max="getProgressMax" 
+            :animated="progress.min === progress.max" style="margin-top:6px;"></b-progress>
+          <h6 v-text="getProgressStatus" style="color: #999; font-size: 0.8em; float: left;"></h6>
+          <h6 v-text="getProgressValue" style="color: #999; font-size: 0.8em; float: right;"></h6>
         </div>
       </b-modal>
 
       <b-button-toolbar style="display: block;">
         <b-button-group class="mx-1 float-right">
-          <b-btn variant="info">
+          <b-btn>
             <i class="fas fa-list"></i>
           </b-btn>
-          <b-btn variant="info">
+          <b-btn variant="info" @click="() => onScanAnimeFolder()">
             <i class="fas fa-sync-alt"></i>
           </b-btn>
         </b-button-group>
         <b-button-group class="mx-1 float-right">
-          <b-btn v-b-modal.modal-center @click="() => $refs.modalAdd.show()" variant="info">
+          <b-btn v-b-modal.modal-center @click="() => $refs.modalAdd.show()" variant="success">
             <i class="fas fa-plus-circle"></i>
           </b-btn>
         </b-button-group>
@@ -92,30 +95,57 @@
       </b-card>
       <b-card v-else class="card-table">
         <b-table :striped="!!anime.newItems.length" :small="true" :hover="!!anime.newItems.length" :items="anime.newItems" 
-          :fields="anime.newFields" :sort-by.sync="anime.newSortBy" :sort-desc.sync="anime.newSortDesc" :show-empty="true" 
+          :fields="anime.newFields" :sort-by.sync="anime.newSortBy" :sort-desc.sync="anime.newSortDesc" 
+          :show-empty="true" :current-page="anime.newPage" :per-page="10"
           empty-text="Please add folder for scan new anime.">
             <col slot="table-colgroup" style="width:5%"/>
             <col slot="table-colgroup" style="width:10%"/>
             <col slot="table-colgroup" style="width:55%"/>
             <col slot="table-colgroup" style="width:15%"/>
+            <template slot="id" slot-scope="data">{{data.index + 1}}</template>
+            <template slot="episode" slot-scope="data">{{data.item.files.length}}</template>
+            <template slot="folderName" slot-scope="data">{{data.item.name}}</template>
+            <template slot="action" slot-scope="data">
+              <b-button-group size="sm" class="mx-1">
+                <b-btn variant="warning"><i class="fas fa-compress"></i></b-btn>
+                <b-btn variant="warning"><i class="fas fa-save"></i></b-btn>
+              </b-button-group>
+              <b-button-group size="sm" class="mx-1">
+                <b-btn variant="success"><i class="fas fa-check-circle"></i></b-btn>
+                <b-btn variant="error"><i class="fas fa-times"></i></b-btn>
+              </b-button-group>
+            </template>
           </b-table>
       </b-card>
     </b-col>
-    <nuxt />
+  </b-row>
+  <b-row>
+    <b-col>
+      <b-pagination :total-rows="0" :per-page="10" v-model="anime.newPage" class="my-0" />
+    </b-col>
   </b-row>
 </div>
 
 </template>
 
 <script>
-import { ipcRenderer as ipc } from 'electron'
+import { ipcRenderer } from 'electron'
+
+ipcRenderer.on('FOLDER_LIST_ANIME', (e, data) => {
+  console.log('FOLDER_LIST_ANIME', data)
+})
+
 
 export default {
   data () {
     return {
       progress: {
-        text: 'Initialize...',
-        total: 0
+        status: '',
+        pretext: '',
+        step: 0,
+        finish: 0,
+        min: 0,
+        max: 0
       },
       anime: {
         validate: {
@@ -140,8 +170,9 @@ export default {
         ],
         listItems: [
         ],
-        listSortBy: 'id',
-        listSortDesc: false,
+        newPage: 1,
+        newSortBy: 'id',
+        newSortDesc: false,
         newFields: [
           { key: 'id', label: '#', sortable: true, 'class': 'text-center' },
           { key: 'episode', label: 'Episodes', sortable: false, 'class': 'text-center' },
@@ -197,13 +228,53 @@ export default {
       if (this.anime.newName.trim() !== '') this.onBowse()
     },
     onBowse () {
-      this.anime.validate.name = null
-      this.anime.validate.folder = null
-      this.anime.newWait = true
-      ipc.send('DIALOG_OPEN_FOLDER')
+      let vm = this
+      vm.anime.validate.name = null
+      vm.anime.validate.folder = null
+      vm.anime.newWait = true
+      vm.$ipc.call('DIALOG_OPEN_FOLDER').then(async data => {
+        vm.anime.newWait = false
+        if (data) {
+          vm.anime.newName = vm.anime.newName || data.name
+          vm.anime.newPath = data.path
+          if (vm.getVerifyFolder() && vm.getVerifyName()) {
+            let item = {
+              name: vm.anime.newName,
+              folder: data.path
+            }
+            vm.anime.groupFolder.push(item)
+            await vm.$localForage.setItem('anime.new.group-folder', vm.anime.groupFolder)
+            vm.anime.validate.name = null
+            vm.anime.validate.folder = null
+            vm.$refs.modalAdd.hide()
+            vm.onScanAnimeFolder(item)
+          } else {
+            vm.anime.validate.folder = false
+            console.log('validate.folder', vm.anime.validate.folder)
+          }
+        }
+      })
     },
-    onScanAnimeFolder () {
-      this.$refs.modalProgress.show()
+    onScanAnimeFolder (folder) {
+      let vm = this
+      // this.anime.groupFolder = [
+      //   { folder: '\\\\192.168.1.10\\Anime\\Anime', name: 'Anime' },
+      //   { folder: '\\\\192.168.1.10\\Anime\\Anime-Check\\Anime-Check\\Anime-OnGoing', name: 'Anime-OnGoing' },
+      //   // { folder: '\\\\192.168.1.10\\Anime\\Anime-Check', name: 'Anime-Check' }
+      // ]
+      this.progress.finish = 10
+      this.$ipc.on('FOLDER_LIST_PROGRESS', data => {
+        if (data.pretext !== undefined) vm.progress.pretext = data.pretext
+        if (data.status !== undefined) vm.progress.status = data.status
+        if (data.step !== undefined) vm.progress.step = data.step
+        if (data.min !== undefined) vm.progress.min = data.min
+        if (data.max !== undefined) vm.progress.max = data.max
+      })
+      vm.$refs.modalProgress.show()
+      vm.$ipc.call('FOLDER_LIST_ANIME', folder ? [ folder ] : vm.anime.groupFolder).then(data => {
+        vm.$refs.modalProgress.hide()
+        if (folder) vm.anime.newItems = vm.anime.newItems.concat(data); else vm.anime.newItems = data
+      })
     }
   },
   computed: {
@@ -214,45 +285,34 @@ export default {
       return this.getVerifyName() ? null : false
     },
     getProgressText () {
-      return this.progress.text
+      return this.progress.pretext ? this.progress.pretext : ''
     },
-    getProgressAllMin () {
-      return 0
+    getProgressStatus () {
+      return this.progress.status ? this.progress.status : ''
     },
-    getProgressAllMax () {
-      return 0
+    getProgressValue () {
+      return this.progress.finish === 0 ? '' : (this.progress.step * 100 / this.progress.finish).toFixed(0) + '%'
+    },
+    getProgressStepMin () {
+      return this.progress.finish === 0 ? 1 : this.progress.step
+    },
+    getProgressStepMax () {
+      return this.progress.finish === 0 ? 1 : this.progress.finish
     },
     getProgressMin () {
-      return 0
+      return this.progress.min
     },
     getProgressMax () {
-      return 0
+      return this.progress.max
     }
   },
   created () {
     let vm = this
+    vm.$localForage.getItem('anime.new.group-folder').then(data => {
+      vm.anime.groupFolder = data || []
+    })
     vm.$nextTick(() => {
       if (vm.$store.state.newAnime) vm.$refs.btnSearch.focus()
-    })
-    ipc.removeAllListeners('DIALOG_OPEN_FOLDER')
-    ipc.on('DIALOG_OPEN_FOLDER', (e, data) => {
-      vm.anime.newWait = false
-      if (data) {
-        vm.anime.newName = vm.anime.newName || data.name
-        vm.anime.newPath = data.path
-        if (vm.getVerifyFolder() && vm.getVerifyName()) {
-          vm.anime.groupFolder.push({
-            name: vm.anime.newName,
-            folder: data.path
-          })
-          vm.anime.validate.name = null
-          vm.anime.validate.folder = null
-          vm.$refs.modalAdd.hide()
-        } else {
-          vm.anime.validate.folder = false
-          console.log('validate.folder', vm.anime.validate.folder)
-        }
-      }
     })
   }
 }
@@ -275,5 +335,14 @@ export default {
       margin-bottom: 0px;
     }
   }
+}
+.table {
+  td {
+    vertical-align: middle;
+  }
+}
+.progress-bar {
+  transition: none !important;
+  -webkit-transition: none !important;
 }
 </style>

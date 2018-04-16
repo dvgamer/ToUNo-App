@@ -64,7 +64,6 @@
     created () {
       console.log('Loading', this.$store.state.initApp)
       let vm = this
-      this.$store.commit('setInitApp', true)
       // return axios({ method: 'post', url: '/anilist' }).then(res => {
       //   if (res.data.token) {
       //     return localforage.setItem('anilist-token', res.data).then(() => { return res.data })
