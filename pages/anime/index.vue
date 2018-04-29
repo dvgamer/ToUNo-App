@@ -232,7 +232,7 @@ export default {
       vm.anime.validate.name = null
       vm.anime.validate.folder = null
       vm.anime.newWait = true
-      vm.$ipc.call('DIALOG_OPEN_FOLDER').then(async data => {
+      vm.$ipc.call('DIALOG_OPEN_FOLDER').then(data => {
         vm.anime.newWait = false
         if (data) {
           vm.anime.newName = vm.anime.newName || data.name
@@ -243,7 +243,6 @@ export default {
               folder: data.path
             }
             vm.anime.groupFolder.push(item)
-            await vm.$localForage.setItem('anime.new.group-folder', vm.anime.groupFolder)
             vm.anime.validate.name = null
             vm.anime.validate.folder = null
             vm.$refs.modalAdd.hide()
@@ -308,9 +307,6 @@ export default {
   },
   created () {
     let vm = this
-    vm.$localForage.getItem('anime.new.group-folder').then(data => {
-      vm.anime.groupFolder = data || []
-    })
     vm.$nextTick(() => {
       if (vm.$store.state.newAnime) vm.$refs.btnSearch.focus()
     })

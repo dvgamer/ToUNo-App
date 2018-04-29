@@ -29,7 +29,6 @@ module.exports = {
   ],
   modules: [
     // With options
-    '@nuxtjs/localforage',
     '@nuxtjs/moment'
   ],
   dev: process.env.NODE_ENV === 'DEV',
