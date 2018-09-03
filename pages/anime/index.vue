@@ -33,7 +33,7 @@
         :hide-header-close="anime.newWait" :no-close-on-backdrop="true"
         @shown="onInitNewAnime" :no-close-on-esc="true" :no-enforce-focus ="true">
         <b-form>
-          <b-form-group horizontal label="Folder Name:" label-for="txtFolderName" maxCols="36" label-cols="10" label-class="text-sm-right"
+          <b-form-group horizontal label="Folder Name:" label-for="txtFolderName" :max-cols="36" label-cols="10" label-class="text-sm-right"
             description="Optional, Default is Generate folder group name.">
             <b-form-input ref="txtFolderName" id="txtFolderName" type="text" placeholder="Anime-01" 
               :state="IsVerifyName" @keydown.enter.native="onBowseNext" :disabled="anime.newWait" v-model="anime.newName"></b-form-input>
