@@ -30,27 +30,15 @@
     "localforage": "^1.7.2",
     "moment": "^2.22.2",
     "node-sass": "^4.9.3",
-    "nuxt": "^1.4.2",
-    "sass-loader": "^6.0.7",
+    "nuxt": "^2.10.0",
     "walk": "^2.3.14"
   },
   "devDependencies": {
     "@fortawesome/fontawesome": "^1.1.8",
     "@fortawesome/fontawesome-free-brands": "^5.0.13",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
-    "babel-eslint": "^8.2.6",
-    "consola": "^1.4.3",
-    "cross-env": "^3.1.4",
-    "electron": "2.0.0-beta.7",
-    "electron-builder": "^20.28.4",
     "electron-devtools-installer": "^2.2.4",
-    "eslint": "^4.15.0",
-    "eslint-friendly-formatter": "^3.0.0",
-    "eslint-loader": "^1.7.1",
-    "eslint-plugin-css-modules": "^2.9.1",
-    "eslint-plugin-vue": "^4.7.1",
-    "jquery": "^3.3.1",
-    "tree-kill": "^1.2.0"
+    "jquery": "^3.4.1"
   },
   "description": "Create an Electron app that serves a Nuxt.js app",
   "repository": {
