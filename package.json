@@ -38,7 +38,7 @@
     "@fortawesome/fontawesome-free-brands": "^5.0.13",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "electron-devtools-installer": "^2.2.4",
-    "jquery": "^3.4.1"
+    "jquery": "^3.5.0"
   },
   "description": "Create an Electron app that serves a Nuxt.js app",
   "repository": {
